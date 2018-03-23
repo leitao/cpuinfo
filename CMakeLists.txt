@@ -51,7 +51,7 @@ IF(NOT CMAKE_SYSTEM_PROCESSOR)
       "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
     SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
   ENDIF()
-ELSEIF(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(i686|AMD64|x86_64|armv5te|armv7|armv7f|armv7s|armv7k|armv7-a|armv7l|arm64|aarch64)$")
+ELSEIF(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(i686|AMD64|x86_64|armv5te|armv7|armv7f|armv7s|armv7k|armv7-a|armv7l|arm64|aarch64|ppc64le)$")
   MESSAGE(WARNING
     "Target processor architecture \"${CMAKE_SYSTEM_PROCESSOR}\" is not supported in cpuinfo. "
     "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
@@ -128,6 +128,10 @@ IF(CPUINFO_SUPPORTED_PLATFORM)
     ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
       LIST(APPEND CPUINFO_SRCS src/x86/windows/init.c)
     ENDIF()
+  ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ppc64le)$" )
+    LIST(APPEND CPUINFO_SRCS
+      src/powerpc/linux/cpuinfo.c
+      src/powerpc/linux/init.c)
   ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(armv5te|armv7|armv7f|armv7s|armv7k|armv7-a|armv7l|arm64|aarch64)$" OR IOS)
     LIST(APPEND CPUINFO_SRCS
       src/arm/uarch.c
@@ -727,3 +731,5 @@ IF(CPUINFO_SUPPORTED_PLATFORM AND CPUINFO_BUILD_TOOLS)
     TARGET_INCLUDE_DIRECTORIES(cpuid-dump BEFORE PRIVATE include)
   ENDIF()
 ENDIF()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb")

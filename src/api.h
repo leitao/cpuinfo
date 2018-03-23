@@ -37,4 +37,6 @@ void cpuinfo_x86_linux_init(void);
 void cpuinfo_arm_mach_init(void);
 void cpuinfo_arm_linux_init(void);
 
+void cpuinfo_powerpc_linux_init(void);
+
 typedef void (*cpuinfo_processor_callback)(uint32_t);

@@ -1344,6 +1344,16 @@ static inline bool cpuinfo_has_x86_sha(void) {
 	extern struct cpuinfo_arm_isa cpuinfo_isa;
 #endif
 
+#if CPUINFO_ARCH_PPC64
+	struct cpuinfo_powerpc_isa {
+			bool vsx;
+			bool vmx;
+			bool htm;
+	};
+
+	extern struct cpuinfo_powerpc_isa cpuinfo_isa;
+#endif
+
 static inline bool cpuinfo_has_arm_thumb(void) {
 	#if CPUINFO_ARCH_ARM
 		return cpuinfo_isa.thumb;
