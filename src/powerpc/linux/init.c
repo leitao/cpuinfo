@@ -124,7 +124,31 @@ void cpuinfo_powerpc_linux_init(void) {
 			powerpc_linux_processors_count * sizeof(struct cpuinfo_processor*), powerpc_linux_processors_count);
 		goto cleanup;
 	}
+
+	for (uint32_t i = 0; i < usable_processors; i++) {
+                processors[i].smt_id = 0;
+                processors[i].core = cores + i;
+                processors[i].cluster = clusters + 1; //TBD
+                processors[i].package = &package;
+                processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
+                processors[i].cache.l1i = l1i + i;
+                processors[i].cache.l1d = l1d + i;
+                processors[i].cache.l2 = l2 ;
+		cores[i].processor_start = i;
+                cores[i].processor_count = 1;
+                cores[i].core_id = i;
+                cores[i].cluster = clusters;
+                cores[i].package = &package;
+                cores[i].vendor = powerpc_linux_processors[i].vendor;
+                cores[i].uarch = powerpc_linux_processors[i].uarch;
+	}
+
+
 	/* Commit */
+	//cpuinfo_processors
+        //cpuinfo_cores
+        //cpuinfo_packages
+
 	cpuinfo_linux_cpu_to_processor_map = linux_cpu_to_processor_map;
 	cpuinfo_linux_cpu_to_core_map = linux_cpu_to_core_map;
 	cpuinfo_processors = processors;
@@ -135,8 +159,8 @@ void cpuinfo_powerpc_linux_init(void) {
 	//cpuinfo_cache[cpuinfo_cache_level_1d] = l1d;
 	//cpuinfo_cache[cpuinfo_cache_level_2]  = l2;
 
-	//cpuinfo_processors_count = usable_processors;
-	//cpuinfo_cores_count = usable_processors;
+	cpuinfo_processors_count = usable_processors;
+	cpuinfo_cores_count = usable_processors;
 	//cpuinfo_clusters_count = cluster_count;
 	//cpuinfo_packages_count = 1;
 	//cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;

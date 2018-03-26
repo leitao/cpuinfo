@@ -7,6 +7,7 @@
 
 
 static const char* vendor_to_string(enum cpuinfo_vendor vendor) {
+	printf("XX: vendor: %x\n", vendor);
 	switch (vendor) {
 		case cpuinfo_vendor_unknown:
 			return "unknown";
@@ -40,6 +41,7 @@ static const char* vendor_to_string(enum cpuinfo_vendor vendor) {
 }
 
 static const char* uarch_to_string(enum cpuinfo_uarch uarch) {
+	printf("XXX: uarch %x\n", uarch);
 	switch (uarch) {
 		case cpuinfo_uarch_unknown:
 			return "unknown";
@@ -183,6 +185,14 @@ static const char* uarch_to_string(enum cpuinfo_uarch uarch) {
 			return "ThunderX";
 		case cpuinfo_uarch_pj4:
 			return "PJ4";
+		case cpuinfo_uarch_power7:
+			return "POWER7";
+		case cpuinfo_uarch_power7p:
+			return "POWER7+";
+		case cpuinfo_uarch_power8:
+			return "POWER8";
+		case cpuinfo_uarch_power9:
+			return "POWER9";
 		default:
 			return NULL;
 	}

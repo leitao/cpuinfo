@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
@@ -23,12 +24,72 @@ struct proc_cpuinfo_parser_state {
 };
 
 
+void parse_cpu(const char *s){
+	printf("Parsing CPU: %s\n", s);
+
+}
+
 static bool parse_line(
 	const char* line_start,
 	const char* line_end,
 	struct proc_cpuinfo_parser_state state[restrict static 1],
 	uint64_t line_number)
 {
+	printf("-> %s\n", line_start);
+	printf("<- %s\n", line_end);
+
+        /* Empty line. Skip. */
+        if (line_start == line_end) {
+                return true;
+        }
+
+        /* Search for ':' on the line. */
+        const char* separator = line_start;
+        for (; separator != line_end; separator++) {
+                if (*separator == ':') {
+                        break;
+                }
+        }
+        /* Skip line if no ':' separator was found. */
+        if (separator == line_end) {
+                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key/value separator ':' not found",
+                        (int) (line_end - line_start), line_start);
+                return true;
+        }
+
+        /* Skip trailing spaces in key part. */
+        const char* key_end = separator;
+        for (; key_end != line_start; key_end--) {
+                if (key_end[-1] != ' ' && key_end[-1] != '\t') {
+                        break;
+                }
+        }
+        /* Skip line if key contains nothing but spaces. */
+        if (key_end == line_start) {
+                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key contains only spaces",
+                        (int) (line_end - line_start), line_start);
+                return true;
+        }
+
+        /* Skip leading spaces in value part. */
+        const char* value_start = separator + 1;
+        for (; value_start != line_end; value_start++) {
+                if (*value_start != ' ') {
+                        break;
+                }
+        }
+        /* Value part contains nothing but spaces. Skip line. */
+        if (value_start == line_end) {
+                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: value contains only spaces",
+                        (int) (line_end - line_start), line_start);
+
+	}
+
+	if (memcmp(line_start, "cpu", 3) == 0) {
+		parse_cpu(line_start);	
+	}
+		
+
 	return true;
 }
 

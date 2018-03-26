@@ -413,6 +413,12 @@ enum cpuinfo_uarch {
 
 	/** Marvell PJ4. */
 	cpuinfo_uarch_pj4 = 0x00900100,
+
+	/* POWER Machines */
+	cpuinfo_uarch_power7 = 0xbeef0001,
+	cpuinfo_uarch_power7p = 0xbeef0002,
+	cpuinfo_uarch_power8 = 0xbeef0003,
+	cpuinfo_uarch_power9 = 0xbeef0004,
 };
 
 struct cpuinfo_processor {
