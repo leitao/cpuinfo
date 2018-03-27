@@ -28,9 +28,9 @@ struct cpuinfo_powerpc_linux_processor {
 	uint32_t features;
 
 	/**
-	 * Main ID Register value.
+	 * Main PVR Register value.
 	 */
-	uint32_t midr;
+	uint32_t pvr;
 	enum cpuinfo_vendor vendor;
 	enum cpuinfo_uarch uarch;
 	/**
@@ -63,10 +63,16 @@ struct cpuinfo_powerpc_linux_processor {
 	/** Linux processor ID */
 	uint32_t system_processor_id;
 	uint32_t flags;
+
+	bool disabled;
 };
 
 bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
         char hardware[restrict static CPUINFO_HARDWARE_VALUE_MAX],
         uint32_t max_processors_count,
         struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors_count]);
+
+#define CPUINFO_POWERPC_LINUX_VALID_PROCESSOR    UINT32_C(0x00200000)
+
+
 

@@ -7,7 +7,6 @@
 
 
 static const char* vendor_to_string(enum cpuinfo_vendor vendor) {
-	printf("XX: vendor: %x\n", vendor);
 	switch (vendor) {
 		case cpuinfo_vendor_unknown:
 			return "unknown";
@@ -41,7 +40,6 @@ static const char* vendor_to_string(enum cpuinfo_vendor vendor) {
 }
 
 static const char* uarch_to_string(enum cpuinfo_uarch uarch) {
-	printf("XXX: uarch %x\n", uarch);
 	switch (uarch) {
 		case cpuinfo_uarch_unknown:
 			return "unknown";
@@ -215,6 +213,8 @@ int main(int argc, char** argv) {
 	printf("Cores:\n");
 	for (uint32_t i = 0; i < cpuinfo_get_cores_count(); i++) {
 		const struct cpuinfo_core* core = cpuinfo_get_core(i);
+		if (core->disabled)
+				continue;
 		if (core->processor_count == 1) {
 			printf("\t%"PRIu32": 1 processor (%"PRIu32")", i, core->processor_start);
 		} else {

@@ -40,6 +40,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l1d = NULL;
 	struct cpuinfo_cache* l2 = NULL;
 	uint32_t usable_processors = 0;
+	struct cpuinfo_package* packages = NULL;
 
 
 	const uint32_t max_processors_count = cpuinfo_linux_get_max_processors_count();
@@ -52,7 +53,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		cpuinfo_linux_get_max_present_processor(max_processors_count);
 	cpuinfo_log_debug("maximum present processors count: %"PRIu32, max_present_processors_count);
 
-	const uint32_t powerpc_linux_processors_count = 8;
+	const uint32_t powerpc_linux_processors_count = cpuinfo_linux_get_max_processors_count();
 
 	powerpc_linux_processors = calloc(powerpc_linux_processors_count, sizeof(struct cpuinfo_powerpc_linux_processor));
 	if (powerpc_linux_processors == NULL) {
@@ -85,8 +86,8 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
-			cpuinfo_log_debug("parsed processor %"PRIu32" MIDR 0x%08"PRIx32,
-				i, powerpc_linux_processors[i].midr);
+	//		cpuinfo_log_debug("parsed processor %"PRIu32" MIDR 0x%08"PRIx32,
+	//			i, powerpc_linux_processors[i].midr);
 		}
 	}
 
@@ -134,25 +135,33 @@ void cpuinfo_powerpc_linux_init(void) {
                 processors[i].cache.l1i = l1i + i;
                 processors[i].cache.l1d = l1d + i;
                 processors[i].cache.l2 = l2 ;
-		cores[i].processor_start = i;
+				cores[i].processor_start = i;
                 cores[i].processor_count = 1;
                 cores[i].core_id = i;
                 cores[i].cluster = clusters;
                 cores[i].package = &package;
                 cores[i].vendor = powerpc_linux_processors[i].vendor;
                 cores[i].uarch = powerpc_linux_processors[i].uarch;
+				// Disable all by default
+				cores[i].disabled = powerpc_linux_processors[i].disabled;
 	}
 
 
-	/* Commit */
-	//cpuinfo_processors
-        //cpuinfo_cores
-        //cpuinfo_packages
+     // Packages
+    packages = calloc(4, sizeof(struct cpuinfo_package));
+	if (packages == NULL) {
+			goto cleanup;
+	}
+	strcpy(&packages[0].name, "POWER8 Single core");
+	cpuinfo_packages = packages;
+	cpuinfo_packages_count = 1;
+
 
 	cpuinfo_linux_cpu_to_processor_map = linux_cpu_to_processor_map;
 	cpuinfo_linux_cpu_to_core_map = linux_cpu_to_core_map;
 	cpuinfo_processors = processors;
 	cpuinfo_cores = cores;
+	cpuinfo_packages = packages; 
 	//cpuinfo_clusters = clusters;
 	//cpuinfo_packages = &package;
 	//cpuinfo_cache[cpuinfo_cache_level_1i] = l1i;

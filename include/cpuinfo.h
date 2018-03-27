@@ -486,9 +486,14 @@ struct cpuinfo_core {
 #elif CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 	/** Value of Main ID Register (MIDR) for this core */
 	uint32_t midr;
+#elif CPUINFO_ARCH_PPC64
+	/** Value of Processor Version Register for this core */
+	uint32_t pvr;
 #endif
 	/** Clock rate (non-Turbo) of the core, in Hz */
 	uint64_t frequency;
+
+	bool disabled;
 };
 
 struct cpuinfo_cluster {
@@ -514,6 +519,8 @@ struct cpuinfo_cluster {
 #elif CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 	/** Value of Main ID Register (MIDR) of the cores in the cluster */
 	uint32_t midr;
+#elif CPUINFO_ARCH_PPC64
+	/** Value of Processor Version Register in this cluster */
 #endif
 	/** Clock rate (non-Turbo) of the cores in the cluster, in Hz */
 	uint64_t frequency;

@@ -73,7 +73,9 @@ inline static bool is_whitespace(char c) {
 	 * Android NDK headers before platform 21 do not define CPU_SETSIZE,
 	 * so we hard-code its value, as defined in platform 21 headers
 	 */
-	#if defined(__LP64__)
+	#if defined(__powerpc__)
+		static const uint32_t default_max_processors_count = 2048;
+	#elif defined(__LP64__)
 		static const uint32_t default_max_processors_count = 1024;
 	#else
 		static const uint32_t default_max_processors_count = 32;
