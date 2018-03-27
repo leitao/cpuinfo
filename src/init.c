@@ -47,8 +47,7 @@ bool CPUINFO_ABI cpuinfo_initialize(void) {
 #else
 	cpuinfo_log_error("processor architecture is not supported in cpuinfo");
 #endif
-	printf("processors = %p cores = %p and packages = %p \n", cpuinfo_processors, cpuinfo_cores, cpuinfo_packages);
-	return (cpuinfo_processors != NULL) && (cpuinfo_cores != NULL); // && (cpuinfo_packages != NULL);
+	return (cpuinfo_processors != NULL) && (cpuinfo_cores != NULL) && (cpuinfo_packages != NULL);
 }
 
 void CPUINFO_ABI cpuinfo_deinitialize(void) {
