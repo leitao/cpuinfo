@@ -174,6 +174,17 @@ void cpuinfo_powerpc_linux_init(void) {
                 }
         }
 
+        /* TBD */
+        linux_cpu_to_core_map = calloc(powerpc_linux_processors_count, sizeof(struct cpuinfo_core*));
+        if (linux_cpu_to_core_map == NULL) {
+                cpuinfo_log_error("failed to allocate %zu bytes for mapping entries of %"PRIu32" cores",
+                        powerpc_linux_processors_count * sizeof(struct cpuinfo_core*),
+                        powerpc_linux_processors_count);
+                goto cleanup;
+        }
+
+
+        /* TBD */
 	linux_cpu_to_processor_map = calloc(powerpc_linux_processors_count, sizeof(struct cpuinfo_processor*));
 	if (linux_cpu_to_processor_map == NULL) {
 		cpuinfo_log_error("failed to allocate %zu bytes for %"PRIu32" logical processor mapping entries",
