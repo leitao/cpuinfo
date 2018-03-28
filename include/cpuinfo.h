@@ -524,6 +524,7 @@ struct cpuinfo_cluster {
 	uint32_t midr;
 #elif CPUINFO_ARCH_PPC64
 	/** Value of Processor Version Register in this cluster */
+	uint32_t pvr;
 #endif
 	/** Clock rate (non-Turbo) of the cores in the cluster, in Hz */
 	uint64_t frequency;

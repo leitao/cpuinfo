@@ -88,11 +88,10 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
-	//		cpuinfo_log_debug("parsed processor %"PRIu32" MIDR 0x%08"PRIx32,
-	//			i, powerpc_linux_processors[i].midr);
+			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
+					i, powerpc_linux_processors[i].pvr);
 		}
 	}
-
 
 	/* Initialize topology group IDs */
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
