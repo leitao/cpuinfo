@@ -1357,16 +1357,6 @@ static inline bool cpuinfo_has_x86_sha(void) {
 	extern struct cpuinfo_arm_isa cpuinfo_isa;
 #endif
 
-#if CPUINFO_ARCH_PPC64
-	struct cpuinfo_powerpc_isa {
-			bool vsx;
-			bool vmx;
-			bool htm;
-	};
-
-	extern struct cpuinfo_powerpc_isa cpuinfo_isa;
-#endif
-
 static inline bool cpuinfo_has_arm_thumb(void) {
 	#if CPUINFO_ARCH_ARM
 		return cpuinfo_isa.thumb;
@@ -1622,6 +1612,40 @@ static inline bool cpuinfo_has_arm_pmull(void) {
 static inline bool cpuinfo_has_arm_crc32(void) {
 	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 		return cpuinfo_isa.crc32;
+	#else
+		return false;
+	#endif
+}
+
+#if CPUINFO_ARCH_PPC64
+	struct cpuinfo_powerpc_isa {
+			bool vsx;
+			bool vmx;
+			bool htm;
+	};
+
+	extern struct cpuinfo_powerpc_isa cpuinfo_isa;
+#endif
+
+static inline bool cpuinfo_has_powerpc_vsx(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.vsx;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_powerpc_vmx(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.vmx;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_powerpc_htm(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.htm;
 	#else
 		return false;
 	#endif
