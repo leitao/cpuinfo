@@ -192,7 +192,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	for (uint32_t i = 0; i < usable_processors; i++) {
-                processors[i].smt_id = i;
+		processors[i].smt_id = 0; // TBD
                 processors[i].core = cores + i;
                 processors[i].cluster = clusters + 1; //TBD
                 processors[i].package = &package;
