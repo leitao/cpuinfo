@@ -414,11 +414,14 @@ enum cpuinfo_uarch {
 	/** Marvell PJ4. */
 	cpuinfo_uarch_pj4 = 0x00900100,
 
-	/* POWER Machines */
-	cpuinfo_uarch_power7 = 0xbeef0001,
-	cpuinfo_uarch_power7p = 0xbeef0002,
-	cpuinfo_uarch_power8 = 0xbeef0003,
-	cpuinfo_uarch_power9 = 0xbeef0004,
+	/** POWER 7. */
+	cpuinfo_uarch_power7  = 0x00a00100,
+	/** POWER 7p. */
+	cpuinfo_uarch_power7p = 0x00a00101,
+	/** POWER 8. */
+	cpuinfo_uarch_power8  = 0x00a00102,
+	/** POWER 9. */
+	cpuinfo_uarch_power9  = 0x00a00103,
 };
 
 struct cpuinfo_processor {
@@ -521,6 +524,7 @@ struct cpuinfo_cluster {
 	uint32_t midr;
 #elif CPUINFO_ARCH_PPC64
 	/** Value of Processor Version Register in this cluster */
+	uint32_t pvr;
 #endif
 	/** Clock rate (non-Turbo) of the cores in the cluster, in Hz */
 	uint64_t frequency;
@@ -1357,16 +1361,6 @@ static inline bool cpuinfo_has_x86_sha(void) {
 	extern struct cpuinfo_arm_isa cpuinfo_isa;
 #endif
 
-#if CPUINFO_ARCH_PPC64
-	struct cpuinfo_powerpc_isa {
-			bool vsx;
-			bool vmx;
-			bool htm;
-	};
-
-	extern struct cpuinfo_powerpc_isa cpuinfo_isa;
-#endif
-
 static inline bool cpuinfo_has_arm_thumb(void) {
 	#if CPUINFO_ARCH_ARM
 		return cpuinfo_isa.thumb;
@@ -1622,6 +1616,40 @@ static inline bool cpuinfo_has_arm_pmull(void) {
 static inline bool cpuinfo_has_arm_crc32(void) {
 	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 		return cpuinfo_isa.crc32;
+	#else
+		return false;
+	#endif
+}
+
+#if CPUINFO_ARCH_PPC64
+	struct cpuinfo_powerpc_isa {
+			bool vsx;
+			bool vmx;
+			bool htm;
+	};
+
+	extern struct cpuinfo_powerpc_isa cpuinfo_isa;
+#endif
+
+static inline bool cpuinfo_has_powerpc_vsx(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.vsx;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_powerpc_vmx(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.vmx;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_powerpc_htm(void) {
+	#if CPUINFO_ARCH_PPC64
+		return cpuinfo_isa.htm;
 	#else
 		return false;
 	#endif
