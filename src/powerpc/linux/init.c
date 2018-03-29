@@ -41,6 +41,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l4 = NULL;
 	uint32_t usable_processors = 0;
 	struct cpuinfo_package* packages = NULL;
+	int smt;
 
 	const uint32_t max_processors_count = cpuinfo_linux_get_max_processors_count();
 	cpuinfo_log_debug("system maximum processors count: %"PRIu32, max_processors_count);
@@ -187,22 +188,24 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	for (uint32_t i = 0; i < usable_processors; i++) {
-                processors[i].smt_id = i;
-                processors[i].core = cores + i;
-                processors[i].cluster = clusters + 1; //TBD
-                processors[i].package = &package;
-                processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
-                processors[i].cache.l1i = l1i + i;
-                processors[i].cache.l1d = l1d + i;
-                processors[i].cache.l2 = l2 + i ;
-                processors[i].cache.l3 = l3 + i ;
-		cores[i].processor_start = i;
-                cores[i].processor_count = usable_processors;
-                cores[i].core_id = i;
-                cores[i].cluster = clusters;
-                cores[i].package = &package;
-                cores[i].vendor = powerpc_linux_processors[i].vendor;
-                cores[i].uarch = powerpc_linux_processors[i].uarch;
+				processors[i].smt_id = i;
+				processors[i].core = cores + i;
+				processors[i].cluster = clusters + 1; //TBD
+				processors[i].package = &package;
+				processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
+				processors[i].cache.l1i = l1i + i;
+				processors[i].cache.l1d = l1d + i;
+				processors[i].cache.l2 = l2 + i ;
+				processors[i].cache.l3 = l3 + i ;
+				cores[i].processor_start = i;
+				//TODO: Hard wiring SMT=8 for now
+				smt = 8;
+				cores[i].processor_count = smt;
+				cores[i].core_id = i;
+				cores[i].cluster = clusters;
+				cores[i].package = &package;
+				cores[i].vendor = powerpc_linux_processors[i].vendor;
+				cores[i].uarch = powerpc_linux_processors[i].uarch;
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
 	}
@@ -212,7 +215,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	if (packages == NULL) {
 		goto cleanup;
 	}
-	strcpy(&packages[0].name, "POWER8 Single core");
+	strcpy(packages[0].name, "POWER8 Single core");
 	cpuinfo_packages = packages;
 	cpuinfo_packages_count = 1;
 
