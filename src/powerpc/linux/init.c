@@ -188,24 +188,24 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	for (uint32_t i = 0; i < usable_processors; i++) {
-				processors[i].smt_id = i;
-				processors[i].core = cores + i;
-				processors[i].cluster = clusters + 1; //TBD
-				processors[i].package = &package;
-				processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
-				processors[i].cache.l1i = l1i + i;
-				processors[i].cache.l1d = l1d + i;
-				processors[i].cache.l2 = l2 + i ;
-				processors[i].cache.l3 = l3 + i ;
-				cores[i].processor_start = i;
-				//TODO: Hard wiring SMT=8 for now
-				smt = 8;
-				cores[i].processor_count = smt;
-				cores[i].core_id = i;
-				cores[i].cluster = clusters;
-				cores[i].package = &package;
-				cores[i].vendor = powerpc_linux_processors[i].vendor;
-				cores[i].uarch = powerpc_linux_processors[i].uarch;
+		processors[i].smt_id = i;
+		processors[i].core = cores + i;
+		processors[i].cluster = clusters + 1; //TBD
+		processors[i].package = &package;
+		processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
+		processors[i].cache.l1i = l1i + i;
+		processors[i].cache.l1d = l1d + i;
+		processors[i].cache.l2 = l2 + i ;
+		processors[i].cache.l3 = l3 + i ;
+		cores[i].processor_start = i;
+		//TODO: Hard wiring SMT=8 for now
+		smt = 8;
+		cores[i].processor_count = smt;
+		cores[i].core_id = i;
+		cores[i].cluster = clusters;
+		cores[i].package = &package;
+		cores[i].vendor = powerpc_linux_processors[i].vendor;
+		cores[i].uarch = powerpc_linux_processors[i].uarch;
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
 	}
