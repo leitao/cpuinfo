@@ -40,7 +40,6 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l1d = NULL;
 	struct cpuinfo_cache* l2 = NULL;
         struct cpuinfo_cache* l3 = NULL;
-        struct cpuinfo_cache* l4 = NULL;
 	uint32_t usable_processors = 0;
 	struct cpuinfo_package* packages = NULL;
 
@@ -200,9 +199,10 @@ void cpuinfo_powerpc_linux_init(void) {
                 processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
                 processors[i].cache.l1i = l1i + i;
                 processors[i].cache.l1d = l1d + i;
-                processors[i].cache.l2 = l2 ;
+                processors[i].cache.l2 = l2 + i ;
+                processors[i].cache.l3 = l3 + i ;
 		cores[i].processor_start = i;
-                cores[i].processor_count = 1;
+                cores[i].processor_count = usable_processors;
                 cores[i].core_id = i;
                 cores[i].cluster = clusters;
                 cores[i].package = &package;
@@ -210,6 +210,7 @@ void cpuinfo_powerpc_linux_init(void) {
                 cores[i].uarch = powerpc_linux_processors[i].uarch;
 				// Disable all by default
 				cores[i].disabled = powerpc_linux_processors[i].disabled;
+
 	}
 
 
@@ -230,9 +231,10 @@ void cpuinfo_powerpc_linux_init(void) {
 	cpuinfo_packages = packages; 
 	cpuinfo_clusters = clusters;
 	//cpuinfo_packages = &package;
-	//cpuinfo_cache[cpuinfo_cache_level_1i] = l1i;
-	//cpuinfo_cache[cpuinfo_cache_level_1d] = l1d;
-	//cpuinfo_cache[cpuinfo_cache_level_2]  = l2;
+	cpuinfo_cache[cpuinfo_cache_level_1i] = l1i;
+	cpuinfo_cache[cpuinfo_cache_level_1d] = l1d;
+	cpuinfo_cache[cpuinfo_cache_level_2]  = l2;
+	cpuinfo_cache[cpuinfo_cache_level_3]  = l3;
 
 	cpuinfo_processors_count = usable_processors;
 	cpuinfo_cores_count = usable_processors;
