@@ -118,7 +118,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	/* TBD */
-	uint32_t packages_count = 10;
+	uint32_t packages_count = usable_processors;
 	clusters = calloc(packages_count, sizeof(struct cpuinfo_cluster));
 	if (clusters == NULL) {
 		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" core clusters",
@@ -127,7 +127,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	/* TBD */
-	uint32_t l1i_count = 10;
+	uint32_t l1i_count = usable_processors ;
 	if (l1i_count != 0) {
 		l1i = calloc(l1i_count, sizeof(struct cpuinfo_cache));
 		if (l1i == NULL) {
@@ -138,7 +138,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	/* TBD */
-	uint32_t l1d_count = 10;
+	uint32_t l1d_count = usable_processors;
 	if (l1d_count != 0) {
 		l1d = calloc(l1d_count, sizeof(struct cpuinfo_cache));
 		if (l1d == NULL) {
@@ -149,7 +149,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	/* TBD */
-	uint32_t l2_count = 10;
+	uint32_t l2_count = usable_processors;
 	if (l2_count != 0) {
 		l2 = calloc(l2_count, sizeof(struct cpuinfo_cache));
 		if (l2 == NULL) {
@@ -160,7 +160,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	/* TBD */
-	uint32_t l3_count = 10;
+	uint32_t l3_count = usable_processors;
 	if (l3_count != 0) {
 		l3 = calloc(l3_count, sizeof(struct cpuinfo_cache));
 		if (l3 == NULL) {
@@ -197,7 +197,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		processors[i].cache.l1d = l1d + i;
 		processors[i].cache.l2 = l2 + i ;
 		processors[i].cache.l3 = l3 + i ;
-		cores[i].processor_start = i;
+		cores[i].processor_start = 0;
 		//TODO: Hard wiring SMT=8 for now
 		smt = 8;
 		cores[i].processor_count = smt;
@@ -208,6 +208,14 @@ void cpuinfo_powerpc_linux_init(void) {
 		cores[i].uarch = powerpc_linux_processors[i].uarch;
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
+                /* populate the cache information */
+                
+                cpuinfo_powerpc_decode_cache(processors[i].smt_id, &l1i[i], &l1d[i], &l2[i], &l3[i]);
+                l1i[i].processor_start = l1d[i].processor_start = 0;
+                l1i[i].processor_count = l1d[i].processor_count = i;
+                l2[i].processor_start = l3[i].processor_start = 0;
+                l2[i].processor_count = l3[i].processor_count = i;
+                l1d[i].partitions = l1i[i].partitions  = 1;
 	}
 
 	/* Packages */
@@ -236,9 +244,10 @@ void cpuinfo_powerpc_linux_init(void) {
 	cpuinfo_cores_count = usable_processors;
 	//cpuinfo_clusters_count = cluster_count;
 	//cpuinfo_packages_count = 1;
-	//cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;
-	//cpuinfo_cache_count[cpuinfo_cache_level_1d] = usable_processors;
-	//cpuinfo_cache_count[cpuinfo_cache_level_2]  = l2_count;
+	cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;
+	cpuinfo_cache_count[cpuinfo_cache_level_1d] = usable_processors;
+	cpuinfo_cache_count[cpuinfo_cache_level_2]  = usable_processors;
+	cpuinfo_cache_count[cpuinfo_cache_level_3]  = usable_processors;
 
 	linux_cpu_to_processor_map = NULL;
 	linux_cpu_to_core_map = NULL;

@@ -130,6 +130,7 @@ IF(CPUINFO_SUPPORTED_PLATFORM)
     ENDIF()
   ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ppc64le)$" )
     LIST(APPEND CPUINFO_SRCS
+      src/powerpc/cache.c
       src/powerpc/linux/cpuinfo.c
       src/powerpc/linux/init.c)
   ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(armv5te|armv7|armv7f|armv7s|armv7k|armv7-a|armv7l|arm64|aarch64)$" OR IOS)
