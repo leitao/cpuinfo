@@ -85,22 +85,17 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
+		powerpc_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
 			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
 					i, powerpc_linux_processors[i].pvr);
+			usable_processors += 1;
 		}
 	}
 
 	/* Initialize topology group IDs */
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		powerpc_linux_processors[i].package_leader_id = i;
-	}
-
-	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
-		powerpc_linux_processors[i].system_processor_id = i;
-		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
-			usable_processors += 1;
-		}
 	}
 
 	processors = calloc(usable_processors, sizeof(struct cpuinfo_processor));
