@@ -40,7 +40,6 @@ void cpuinfo_powerpc_linux_init(void) {
         struct cpuinfo_cache* l3 = NULL;
 	struct cpuinfo_cache* l4 = NULL;
 	uint32_t usable_processors = 0;
-	struct cpuinfo_package* packages = NULL;
 	int smt;
 
 	const uint32_t max_processors_count = cpuinfo_linux_get_max_processors_count();
@@ -121,6 +120,15 @@ void cpuinfo_powerpc_linux_init(void) {
 			&powerpc_linux_processors[i].uarch);
 		}
 	}
+
+	const struct cpuinfo_powerpc_chipset chipset = {
+		/* TODO(rcardoso): hardcoded. */
+		.vendor = cpuinfo_powerpc_chipset_vendor_ibm,
+	};
+
+	cpuinfo_powerpc_chipset_to_string(&chipset, package.name);
+	package.processor_count = usable_processors;
+	package.core_count = 1; /* TODO(rcardoso) */
 
 	processors = calloc(usable_processors, sizeof(struct cpuinfo_processor));
 	if (processors == NULL) {
@@ -237,23 +245,13 @@ void cpuinfo_powerpc_linux_init(void) {
                 l1d[i].partitions = l1i[i].partitions  = 1;
 	}
 
-	/* Packages */
-	packages = calloc(4, sizeof(struct cpuinfo_package));
-	if (packages == NULL) {
-		goto cleanup;
-	}
-	strcpy(packages[0].name, "POWER8 Single core");
-	cpuinfo_packages = packages;
-	cpuinfo_packages_count = 1;
-
 	/* Commit */
 	cpuinfo_linux_cpu_to_processor_map = linux_cpu_to_processor_map;
 	cpuinfo_linux_cpu_to_core_map = linux_cpu_to_core_map;
 	cpuinfo_processors = processors;
 	cpuinfo_cores = cores;
-	cpuinfo_packages = packages;
+	cpuinfo_packages = &package;
 	cpuinfo_clusters = clusters;
-	//cpuinfo_packages = &package;
 	cpuinfo_cache[cpuinfo_cache_level_1i] = l1i;
 	cpuinfo_cache[cpuinfo_cache_level_1d] = l1d;
 	cpuinfo_cache[cpuinfo_cache_level_2]  = l2;
@@ -262,7 +260,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	cpuinfo_processors_count = usable_processors;
 	cpuinfo_cores_count = usable_processors;
 	//cpuinfo_clusters_count = cluster_count;
-	//cpuinfo_packages_count = 1;
+	cpuinfo_packages_count = 1;
 	cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;
 	cpuinfo_cache_count[cpuinfo_cache_level_1d] = usable_processors;
 	cpuinfo_cache_count[cpuinfo_cache_level_2]  = usable_processors;
