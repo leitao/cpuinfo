@@ -90,6 +90,19 @@ void cpuinfo_powerpc_linux_init(void) {
 			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
 					i, powerpc_linux_processors[i].pvr);
 			usable_processors += 1;
+
+			/* Detect min/max frequency */
+			const uint32_t max_frequency = cpuinfo_linux_get_processor_max_frequency(i);
+			if (max_frequency != 0) {
+				powerpc_linux_processors[i].max_frequency = max_frequency;
+				powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MAX_FREQUENCY;
+			}
+
+			const uint32_t min_frequency = cpuinfo_linux_get_processor_min_frequency(i);
+			if (min_frequency != 0) {
+				powerpc_linux_processors[i].min_frequency = min_frequency;
+				powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MIN_FREQUENCY;
+			}
 		}
 	}
 
