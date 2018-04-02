@@ -237,12 +237,12 @@ void cpuinfo_powerpc_linux_init(void) {
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
                 /* populate the cache information */
                 
-                cpuinfo_powerpc_decode_cache(processors[i].smt_id, &l1i[i], &l1d[i], &l2[i], &l3[i]);
-                l1i[i].processor_start = l1d[i].processor_start = 0;
-                l1i[i].processor_count = l1d[i].processor_count = i;
-                l2[i].processor_start = l3[i].processor_start = 0;
-                l2[i].processor_count = l3[i].processor_count = i;
-                l1d[i].partitions = l1i[i].partitions  = 1;
+		(processors[i].smt_id, &l1i[i], &l1d[i], &l2[i], &l3[i]);
+		l1i[i].processor_start = l1d[i].processor_start = 0;
+		l1i[i].processor_count = l1d[i].processor_count = i;
+		l2[i].processor_start = l3[i].processor_start = 0;
+		l2[i].processor_count = l3[i].processor_count = i;
+		l1d[i].partitions = l1i[i].partitions  = 1;
 	}
 
 	/* Commit */
