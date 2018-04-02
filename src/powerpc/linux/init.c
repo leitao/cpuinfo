@@ -87,8 +87,6 @@ void cpuinfo_powerpc_linux_init(void) {
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		powerpc_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
-			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
-					i, powerpc_linux_processors[i].pvr);
 			usable_processors += 1;
 
 			/* Detect min/max frequency */
@@ -103,6 +101,9 @@ void cpuinfo_powerpc_linux_init(void) {
 				powerpc_linux_processors[i].min_frequency = min_frequency;
 				powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MIN_FREQUENCY;
 			}
+
+			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
+					i, powerpc_linux_processors[i].pvr);
 		}
 	}
 
