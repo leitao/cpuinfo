@@ -112,6 +112,16 @@ void cpuinfo_powerpc_linux_init(void) {
 		powerpc_linux_processors[i].package_leader_id = i;
 	}
 
+	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
+		/* TODO(rcardoso): check for cluster leader? */
+		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
+			cpuinfo_powerpc_decode_vendor_uarch(
+			powerpc_linux_processors[i].pvr,
+			&powerpc_linux_processors[i].vendor,
+			&powerpc_linux_processors[i].uarch);
+		}
+	}
+
 	processors = calloc(usable_processors, sizeof(struct cpuinfo_processor));
 	if (processors == NULL) {
 		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" logical processors",
