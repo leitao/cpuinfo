@@ -16,11 +16,11 @@
 #define BUFFER_SIZE 1024
 
 struct proc_cpuinfo_parser_state {
-        char* hardware;
-        uint32_t processor_index;
-        uint32_t max_processors_count;
-        struct cpuinfo_powerpc_linux_processor* processors;
-        struct cpuinfo_powerpc_linux_processor dummy_processor;
+	char* hardware;
+	uint32_t processor_index;
+	uint32_t max_processors_count;
+	struct cpuinfo_powerpc_linux_processor* processors;
+	struct cpuinfo_powerpc_linux_processor dummy_processor;
 };
 
 static uint32_t parse_processor_number(
@@ -86,74 +86,74 @@ static bool parse_line(
 	uint64_t line_number)
 {
 
-		static int system_processor_id = -1;
+	static int system_processor_id = -1;
 
-        /* Empty line. Skip. */
-        if (line_start == line_end) {
-                return true;
-        }
+	/* Empty line. Skip. */
+	if (line_start == line_end) {
+		return true;
+	}
 
-        /* Search for ':' on the line. */
-        const char* separator = line_start;
-        for (; separator != line_end; separator++) {
-                if (*separator == ':') {
-                        break;
-                }
-        }
-        /* Skip line if no ':' separator was found. */
-        if (separator == line_end) {
-                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key/value separator ':' not found",
-                        (int) (line_end - line_start), line_start);
-                return true;
-        }
-
-        /* Skip trailing spaces in key part. */
-        const char* key_end = separator;
-        for (; key_end != line_start; key_end--) {
-                if (key_end[-1] != ' ' && key_end[-1] != '\t') {
-                        break;
-                }
-        }
-        /* Skip line if key contains nothing but spaces. */
-        if (key_end == line_start) {
-                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key contains only spaces",
-                        (int) (line_end - line_start), line_start);
-                return true;
-        }
-
-        /* Skip leading spaces in value part. */
-        const char* value_start = separator + 1;
-        for (; value_start != line_end; value_start++) {
-                if (*value_start != ' ') {
-                        break;
-                }
-        }
-        /* Value part contains nothing but spaces. Skip line. */
-        if (value_start == line_end) {
-                cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: value contains only spaces",
-                        (int) (line_end - line_start), line_start);
-
+	/* Search for ':' on the line. */
+	const char* separator = line_start;
+	for (; separator != line_end; separator++) {
+		if (*separator == ':') {
+			break;
 		}
+	}
 
-	    /* Skip trailing spaces in value part (if any) */
-		const char* value_end = line_end;
-		for (; value_end != value_start; value_end--) {
-			if (value_end[-1] != ' ') {
-				break;
-			}
+	/* Skip line if no ':' separator was found. */
+	if (separator == line_end) {
+		cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key/value separator ':' not found",
+			(int) (line_end - line_start), line_start);
+		return true;
+        }
+
+	/* Skip trailing spaces in key part. */
+	const char* key_end = separator;
+	for (; key_end != line_start; key_end--) {
+		if (key_end[-1] != ' ' && key_end[-1] != '\t') {
+			break;
 		}
+	}
 
+	/* Skip line if key contains nothing but spaces. */
+	if (key_end == line_start) {
+		cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: key contains only spaces",
+			(int) (line_end - line_start), line_start);
+		return true;
+	}
 
-    /* Declarations to return */
-    const uint32_t processor_index      = state->processor_index;
-    const uint32_t max_processors_count = state->max_processors_count;
-    struct cpuinfo_powerpc_linux_processor* processors = state->processors;
-    struct cpuinfo_powerpc_linux_processor* processor  = &state->dummy_processor;
+	/* Skip leading spaces in value part. */
+	const char* value_start = separator + 1;
+	for (; value_start != line_end; value_start++) {
+		if (*value_start != ' ') {
+			break;
+		}
+	}
+
+	/* Value part contains nothing but spaces. Skip line. */
+	if (value_start == line_end) {
+		cpuinfo_log_warning("Line %.*s in /proc/cpuinfo is ignored: value contains only spaces",
+			(int) (line_end - line_start), line_start);
+	}
+
+	/* Skip trailing spaces in value part (if any) */
+	const char* value_end = line_end;
+	for (; value_end != value_start; value_end--) {
+		if (value_end[-1] != ' ') {
+			break;
+		}
+	}
+
+	/* Declarations to return */
+	const uint32_t processor_index      = state->processor_index;
+	const uint32_t max_processors_count = state->max_processors_count;
+	struct cpuinfo_powerpc_linux_processor* processors = state->processors;
+	struct cpuinfo_powerpc_linux_processor* processor  = &state->dummy_processor;
 
 	if (processor_index < max_processors_count) {
-        processor = &processors[processor_index];
-    }
-
+		processor = &processors[processor_index];
+	}
 
 	if (memcmp(line_start, "processor", 9) == 0) {
 		state->processor_index =  parse_processor_number(value_start, value_end);
@@ -161,9 +161,8 @@ static bool parse_line(
 	}
 
 	if (memcmp(line_start, "cpu", 3) == 0) {
-		parse_cpu(value_start, value_end, processor, system_processor_id);	
+		parse_cpu(value_start, value_end, processor, system_processor_id);
 	}
-		
 
 	return true;
 }
