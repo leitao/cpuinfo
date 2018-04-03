@@ -415,13 +415,17 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_pj4 = 0x00900100,
 
 	/** POWER 7. */
-	cpuinfo_uarch_power7  = 0x00a00100,
+	cpuinfo_uarch_power7    = 0x00a00100,
 	/** POWER 7p. */
-	cpuinfo_uarch_power7p = 0x00a00101,
+	cpuinfo_uarch_power7p   = 0x00a00101,
 	/** POWER 8. */
-	cpuinfo_uarch_power8  = 0x00a00102,
+	cpuinfo_uarch_power8    = 0x00a00200,
+	/** POWER8E. */
+	cpuinfo_uarch_power8e   = 0x00a00201,
+	/** POWER8NVL */
+	cpuinfo_uarch_power8nvl = 0x00a00202,
 	/** POWER 9. */
-	cpuinfo_uarch_power9  = 0x00a00103,
+	cpuinfo_uarch_power9    = 0x00a00303,
 };
 
 struct cpuinfo_processor {

@@ -49,33 +49,75 @@ static uint32_t parse_processor_number(
 	return processor_number;
 }
 
-void parse_cpu(const char *cpu_start, const char *cpu_end, struct cpuinfo_powerpc_linux_processor *processor, int system_processor_id){
+static void parse_cpu_architecture(
+	const char *cpu_architecture_start,
+	const char *cpu_architecture_end,
+	struct cpuinfo_powerpc_linux_processor *processor)
+{
+	const size_t cpu_arch_name_length = 5;
 
-	if (!memcmp(cpu_start, "POWER", 5)) {
+	if (!memcmp(cpu_architecture_start, "POWER", cpu_arch_name_length)) {
 		processor->vendor = cpuinfo_vendor_ibm;
 
-		/* POWER7 */
-		if (!memcmp(cpu_start, "POWER7", 6)) {
-			processor->architecture_version = 7;
-			processor->uarch = cpuinfo_uarch_power7;
-		/* POWER7+ */
-		} else if (!memcmp(cpu_start, "POWER7+", 7)) {
-			processor->uarch = cpuinfo_uarch_power7p;
-			processor->architecture_version = 7;
-		/* POWER8 */
-		} else if (!memcmp(cpu_start, "POWER8", 6)) {
-			processor->uarch = cpuinfo_uarch_power8;
-			processor->architecture_version = 8;
-		/* POWER9 */
-		} else if (!memcmp(cpu_start, "POWER9", 6)) {
-			processor->uarch = cpuinfo_uarch_power9;
-			processor->architecture_version = 9;
+		const char* cpu_arch_ptr = cpu_architecture_start + cpu_arch_name_length;
+		uint32_t arch_version = 0;
+		for (; cpu_arch_ptr != cpu_architecture_end; cpu_arch_ptr++) {
+			const uint32_t digit = (uint32_t) (*cpu_arch_ptr - '0');
+
+			if (digit >= 10) {
+				break;
+			}
+			arch_version = arch_version * 10 + digit;
 		}
 
-		processor->system_processor_id = system_processor_id;
+		switch(arch_version) {
+			case 7: /* POWER7 */
+				processor->architecture_version = 7;
+				if (*cpu_arch_ptr == ' ') {
+					processor->uarch = cpuinfo_uarch_power7;
+				} else if (*cpu_arch_ptr == '+') {
+					processor->uarch = cpuinfo_uarch_power7p;
+					cpu_arch_ptr++;
+				} else {
+					goto unsupported;
+				}
+				break;
+			case 8: /* POWER8 */
+				processor->architecture_version = 8;
+				if (*cpu_arch_ptr == ' ') {
+					processor->uarch = cpuinfo_uarch_power8;
+				} else if (*cpu_arch_ptr == 'E') {
+					processor->uarch = cpuinfo_uarch_power8e;
+					cpu_arch_ptr++;
+				} else if (*cpu_arch_ptr == 'N') {
+					cpu_arch_ptr++;
+					if (*cpu_arch_ptr == 'V') {
+						cpu_arch_ptr++;
+					}
+					if (*cpu_arch_ptr == 'L') {
+						processor->uarch = cpuinfo_uarch_power8nvl;
+						cpu_arch_ptr++;
+					}
+				}
+				if (*cpu_arch_ptr != ' ') {
+					goto unsupported;
+				}
+				break;
+			case 9: /* POWER9 */
+				processor->architecture_version = 9;
+				processor->uarch = cpuinfo_uarch_power9;
+				break;
+			default:
+			unsupported:
+				cpuinfo_log_warning("CPU architecture %.*s in /proc/cpuinfo is ignored due to a unsupported architecture version",
+				(int) (cpu_architecture_end - cpu_architecture_start), cpu_architecture_start);
+		}
+
+		processor->system_processor_id = -1;
 		processor->disabled = false;
 	} else {
-		cpuinfo_log_warning("processor %"PRIu32" in /proc/cpuinfo is ignored: unknown processor", system_processor_id);
+		cpuinfo_log_warning("processor %.*s in /proc/cpuinfo is ignored due not a Power processor",
+			(int) (cpu_architecture_end - cpu_architecture_start), cpu_architecture_start);
 	}
 }
 
@@ -85,8 +127,6 @@ static bool parse_line(
 	struct proc_cpuinfo_parser_state state[restrict static 1],
 	uint64_t line_number)
 {
-
-	static int system_processor_id = -1;
 
 	/* Empty line. Skip. */
 	if (line_start == line_end) {
@@ -160,7 +200,7 @@ static bool parse_line(
 	switch (key_length) {
 		case 3:
 			if (memcmp(line_start, "cpu", key_length) == 0) {
-				parse_cpu(value_start, value_end, processor, system_processor_id);
+				parse_cpu_architecture(value_start, value_end, processor);
 			} else {
 				goto unknown;
 			}
