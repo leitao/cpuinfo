@@ -155,15 +155,28 @@ static bool parse_line(
 		processor = &processors[processor_index];
 	}
 
-	if (memcmp(line_start, "processor", 9) == 0) {
-		state->processor_index =  parse_processor_number(value_start, value_end);
-		return true;
-	}
+	const size_t key_length = key_end - line_start;
 
-	if (memcmp(line_start, "cpu", 3) == 0) {
-		parse_cpu(value_start, value_end, processor, system_processor_id);
+	switch (key_length) {
+		case 3:
+			if (memcmp(line_start, "cpu", key_length) == 0) {
+				parse_cpu(value_start, value_end, processor, system_processor_id);
+			} else {
+				goto unknown;
+			}
+			break;
+		case 9:
+			if (memcmp(line_start, "processor", key_length) == 0) {
+				state->processor_index = parse_processor_number(value_start, value_end);
+				return true;
+			} else {
+				goto unknown;
+			}
+			break;
+		default:
+		unknown:
+			cpuinfo_log_debug("unknown /proc/cpuinfo key: %.*s", (int) key_length, line_start);
 	}
-
 	return true;
 }
 
