@@ -37,7 +37,7 @@ static uint32_t parse_processor_number(
 	uint32_t processor_number = 0;
 	for (const char* digit_ptr = processor_start; digit_ptr != processor_end; digit_ptr++) {
 		const uint32_t digit = (uint32_t) (*digit_ptr - '0');
-		if (digit > 10) {
+		if (digit >= 10) {
 			cpuinfo_log_warning("non-decimal suffix %.*s in /proc/cpuinfo processor number is ignored",
 				(int) (processor_end - digit_ptr), digit_ptr);
 			break;
