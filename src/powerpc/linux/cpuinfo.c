@@ -49,34 +49,34 @@ static uint32_t parse_processor_number(
 	return processor_number;
 }
 
-
 void parse_cpu(const char *cpu_start, const char *cpu_end, struct cpuinfo_powerpc_linux_processor *processor, int system_processor_id){
 
 	if (!memcmp(cpu_start, "POWER", 5)) {
-			processor->vendor = cpuinfo_vendor_ibm;
-	}
-    /* POWER7 */
-	if (!memcmp(cpu_start, "POWER7", 6)) {
+		processor->vendor = cpuinfo_vendor_ibm;
+
+		/* POWER7 */
+		if (!memcmp(cpu_start, "POWER7", 6)) {
 			processor->architecture_version = 7;
 			processor->uarch = cpuinfo_uarch_power7;
-    /* POWER7+ */
-	} else if (!memcmp(cpu_start, "POWER7+", 7)) {
+		/* POWER7+ */
+		} else if (!memcmp(cpu_start, "POWER7+", 7)) {
 			processor->uarch = cpuinfo_uarch_power7p;
 			processor->architecture_version = 7;
-    /* POWER8 */
-	} else if (!memcmp(cpu_start, "POWER8", 6)) {
+		/* POWER8 */
+		} else if (!memcmp(cpu_start, "POWER8", 6)) {
 			processor->uarch = cpuinfo_uarch_power8;
 			processor->architecture_version = 8;
-    /* POWER9 */
-	} else if (!memcmp(cpu_start, "POWER9", 6)) {
+		/* POWER9 */
+		} else if (!memcmp(cpu_start, "POWER9", 6)) {
 			processor->uarch = cpuinfo_uarch_power9;
 			processor->architecture_version = 9;
+		}
+
+		processor->system_processor_id = system_processor_id;
+		processor->disabled = false;
 	} else {
-			cpuinfo_log_warning("Not a POWER processor\n");
-			return;
+		cpuinfo_log_warning("processor %"PRIu32" in /proc/cpuinfo is ignored: unknown processor", system_processor_id);
 	}
-	processor->system_processor_id = system_processor_id;
-	processor->disabled = false;
 }
 
 static bool parse_line(
@@ -165,6 +165,24 @@ static bool parse_line(
 				goto unknown;
 			}
 			break;
+		case 5:
+			if (memcmp(line_start, "clock", key_length) == 0) {
+				// TODO
+		} else {
+			goto unknown;
+		}
+		case 7:
+			if (memcmp(line_start, "machine", key_length) == 0) {
+				// TODO
+		} else {
+			goto unknown;
+		}
+		case 8:
+			if (memcmp(line_start, "revision", key_length) == 0) {
+				// TODO
+			} else {
+				goto unknown;
+			}
 		case 9:
 			if (memcmp(line_start, "processor", key_length) == 0) {
 				state->processor_index = parse_processor_number(value_start, value_end);
@@ -193,7 +211,7 @@ bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
 	};
 
 	for (int i = 0 ; i < max_processors_count; i++)
-			processors[i].disabled = true;
+		processors[i].disabled = true;
 
 	return cpuinfo_linux_parse_multiline_file("/proc/cpuinfo", BUFFER_SIZE,
 		(cpuinfo_line_callback) parse_line, &state);
