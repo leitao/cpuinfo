@@ -121,6 +121,72 @@ static void parse_cpu_architecture(
 	}
 }
 
+static void parse_cpu_pvr(
+	const char *cpu_revision_start,
+	const char *cpu_revision_end,
+	struct cpuinfo_powerpc_linux_processor *processor)
+{
+	const char* cpu_rev_ptr = cpu_revision_start;
+	uint16_t revision = 0;
+	uint16_t version  = 0;
+	processor->pvr = 0x0;
+
+	for (; cpu_rev_ptr != cpu_revision_end; cpu_rev_ptr++) {
+		if (*cpu_rev_ptr == '(') {
+			cpu_rev_ptr++; // Skip
+			break;
+		}
+	}
+
+	size_t pvr_str_len = 3;
+	if (memcmp(cpu_rev_ptr, "pvr", pvr_str_len) == 0) {
+		/* Parse revision. */
+		uint16_t revision = 0;
+		cpu_rev_ptr += pvr_str_len + 1; // Skip pvr string + space
+		for (; cpu_rev_ptr != cpu_revision_end; cpu_rev_ptr++) {
+			if (*cpu_rev_ptr == ' ') {
+				cpu_rev_ptr++;
+				break;
+			}
+			uint32_t digit = (uint32_t) (*cpu_rev_ptr - '0');
+			if (digit >= 10) {
+				digit = digit - 0x27;
+				if ((digit < 10) || (digit > 15)) {
+					cpuinfo_log_warning("processor revision %.*s in /proc/cpuinfo is ignored due non number",
+						(int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
+					return;
+				}
+			}
+			revision = revision * 16 + digit;
+		}
+
+		/* Parse version. */
+		uint16_t version  = 0;
+		for (; cpu_rev_ptr != cpu_revision_end; cpu_rev_ptr++) {
+			if (*cpu_rev_ptr == ')') {
+				cpu_rev_ptr++;
+				break;
+			}
+			uint32_t digit = (uint32_t) (*cpu_rev_ptr - '0');
+			if (digit >= 10) {
+				digit = digit - 0x27;
+				if ((digit < 10) || (digit > 15)) {
+					cpuinfo_log_warning("processor version %.*s in /proc/cpuinfo is ignored due non number",
+						(int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
+					return;
+				}
+			}
+			version = version * 16 + digit;
+		}
+
+		processor->pvr |= (revision << 16);
+		processor->pvr |= version;
+	} else {
+		cpuinfo_log_warning("processor revision %.*s in /proc/cpuinfo is ignored due non PVR information",
+            (int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
+	}
+}
+
 static bool parse_line(
 	const char* line_start,
 	const char* line_end,
@@ -219,7 +285,7 @@ static bool parse_line(
 		}
 		case 8:
 			if (memcmp(line_start, "revision", key_length) == 0) {
-				// TODO
+				parse_cpu_pvr(value_start, value_end, processor);
 			} else {
 				goto unknown;
 			}
