@@ -152,7 +152,7 @@ static void parse_cpu_pvr(
 			if (digit >= 10) {
 				digit = digit - 0x27;
 				if ((digit < 10) || (digit > 15)) {
-					cpuinfo_log_warning("processor revision %.*s in /proc/cpuinfo is ignored due non number",
+					cpuinfo_log_warning("cpu revision %.*s in /proc/cpuinfo is ignored due non number",
 						(int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
 					return;
 				}
@@ -171,7 +171,7 @@ static void parse_cpu_pvr(
 			if (digit >= 10) {
 				digit = digit - 0x27;
 				if ((digit < 10) || (digit > 15)) {
-					cpuinfo_log_warning("processor version %.*s in /proc/cpuinfo is ignored due non number",
+					cpuinfo_log_warning("cpu version %.*s in /proc/cpuinfo is ignored due non number",
 						(int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
 					return;
 				}
@@ -182,7 +182,7 @@ static void parse_cpu_pvr(
 		processor->pvr |= (revision << 16);
 		processor->pvr |= version;
 	} else {
-		cpuinfo_log_warning("processor revision %.*s in /proc/cpuinfo is ignored due non PVR information",
+		cpuinfo_log_warning("cpu revision %.*s in /proc/cpuinfo is ignored due non PVR information",
             (int) (cpu_revision_end - cpu_revision_start), cpu_revision_start);
 	}
 }
