@@ -10,6 +10,38 @@
 /* No hard limit in the kernel, maximum length observed on non-rogue kernels is 64 */
 #define CPUINFO_HARDWARE_VALUE_MAX 64
 
+/* from /arch/powerpc/kernel/cputable.c */
+#define CPUINFO_POWERPC_LINUX_FEATURE_64				UINT32_C(0x40000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_ALTIVEC		UINT32_C(0x10000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_FPU			UINT32_C(0x08000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_MMU			UINT32_C(0x04000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_NO_TB				UINT32_C(0x00100000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_SMT				UINT32_C(0x00004000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_DFP			UINT32_C(0x00000400)
+#define CPUINFO_POWERPC_LINUX_FEATURE_POWER6_EXT		UINT32_C(0x00000200)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_VSX			UINT32_C(0x00000080)
+#define CPUINFO_POWERPC_LINUX_FEATURE_TRUE_LE			UINT32_C(0x00000002)
+#define CPUINFO_POWERPC_LINUX_FEATURE_PPC_LE			UINT32_C(0x00000001
+#define CPUINFO_POWERPC_LINUX_FEATURE_ARCH_2_07			UINT32_C(0x80000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HTM				UINT32_C(0x40000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_DSCR				UINT32_C(0x20000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_EBB				UINT32_C(0x10000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_ISEL				UINT32_C(0x08000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_TAR				UINT32_C(0x04000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_VEC_CRYPTO		UINT32_C(0x02000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HTM_NOSC			UINT32_C(0x01000000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_ARCH_3_00			UINT32_C(0x00800000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HAS_IEEE128		UINT32_C(0x00400000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_DARN				UINT32_C(0x00200000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_SCV				UINT32_C(0x00100000)
+#define CPUINFO_POWERPC_LINUX_FEATURE_HTM_NO_SUSPEND	UINT32_C(0x00080000)
+
+#define CPUINFO_POWERPC_LINUX_VALID_ARCHITECTURE UINT32_C(0x00010000)
+#define CPUINFO_POWERPC_LINUX_VALID_IMPLEMENTER  UINT32_C(0x00020000)
+#define CPUINFO_POWERPC_LINUX_VALID_REVISION     UINT32_C(0x00040000)
+#define CPUINFO_POWERPC_LINUX_VALID_PROCESSOR    UINT32_C(0x00080000)
+#define CPUINFO_POWERPC_LINUX_VALID_FEATURES     UINT32_C(0x00100000)
+
 struct cpuinfo_powerpc_linux_proc_cpuinfo_cache {
 	uint32_t i_size;
 	uint32_t i_assoc;
@@ -25,7 +57,7 @@ struct cpuinfo_powerpc_linux_processor {
 	uint32_t architecture_version;
 	uint32_t architecture_flags;
 	struct cpuinfo_powerpc_linux_proc_cpuinfo_cache proc_cpuinfo_cache;
-	uint64_t features;
+	uint32_t features;
 
 	/**
 	 * Main PVR Register value.
@@ -67,10 +99,10 @@ struct cpuinfo_powerpc_linux_processor {
 	bool disabled;
 };
 
-uint64_t cpuinfo_arm_linux_hwcap_from_getauxval(void);
+uint32_t cpuinfo_arm_linux_hwcap_from_getauxval(void);
 
 void cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(
-		uint64_t features,
+		uint32_t features,
 		struct cpuinfo_powerpc_isa isa[restrict static 1]);
 
 bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
@@ -81,5 +113,3 @@ bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
 void cpuinfo_powerpc_linux_count_cluster_processors(
 		uint32_t max_processors,
 		struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);
-
-#define CPUINFO_POWERPC_LINUX_VALID_PROCESSOR    UINT32_C(0x00200000)

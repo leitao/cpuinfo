@@ -127,7 +127,8 @@ void cpuinfo_powerpc_linux_init(void) {
 		}
 	}
 
-	const uint64_t isa_features = cpuinfo_powerpc_linux_hwcap_from_getauxval();
+	/* Where's this used ?? */
+	const uint32_t isa_features = cpuinfo_powerpc_linux_hwcap_from_getauxval();
 	cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(isa_features, &cpuinfo_isa);
 
 	/* Detect min/max frequency and package id*/

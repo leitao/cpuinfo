@@ -19,17 +19,17 @@
 #include <sys/auxv.h>
 
 #if CPUINFO_MOCK
-	static uint64_t mock_hwcap = 0;
-	void cpuinfo_set_hwcap(uint64_t hwcap) {
+	static uint32_t mock_hwcap = 0;
+	void cpuinfo_set_hwcap(uint32_t hwcap) {
 		mock_hwcap = hwcap;
 	}
 #endif
 
-uint64_t cpuinfo_powerpc_linux_hwcap_from_getauxval(void)
+uint32_t cpuinfo_powerpc_linux_hwcap_from_getauxval(void)
 {
 	#if CPUINFO_MOCK
 		return mock_hwcap;
 	#else
-		return getauxval(AT_HWCAP);
+		return (uint32_t) getauxval(AT_HWCAP);
 	#endif
 }

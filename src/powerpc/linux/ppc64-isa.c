@@ -4,7 +4,7 @@
 #include <log.h>
 
 void cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(
-	uint64_t features,
+	uint32_t features,
 	struct cpuinfo_powerpc_isa isa[restrict static 1])
 {
 	/* TODO(rcardoso): Decoder. */
