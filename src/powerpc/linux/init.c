@@ -27,6 +27,32 @@ static inline bool bitmask_all(uint32_t bitfield, uint32_t mask) {
 	return (bitfield & mask) == mask;
 }
 
+static bool cluster_siblings_parser(
+	uint32_t processor, uint32_t siblings_start, uint32_t siblings_end,
+	struct cpuinfo_powerpc_linux_processor* processors)
+{
+	processors[processor].flags |=  CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER;
+	uint32_t package_leader_id = processors[processor].package_leader_id;
+
+	for (uint32_t sibling = siblings_start; sibling < siblings_end; sibling++) {
+		if (!bitmask_all(processors[sibling].flags, CPUINFO_LINUX_MASK_USABLE)) {
+			cpuinfo_log_warning("invalid processor %"PRIu32" reported as a sibling for processor %"PRIu32,
+					sibling, processor);
+			continue;
+		}
+
+		const uint32_t sibling_package_leader_id = processors[sibling].package_leader_id;
+		if (sibling_package_leader_id < package_leader_id) {
+			package_leader_id = sibling_package_leader_id;
+		}
+		processors[sibling].package_leader_id = package_leader_id;
+		processors[sibling].flags |= CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER;
+	}
+
+	processors[processor].package_leader_id = package_leader_id;
+	return true;
+}
+
 void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_powerpc_linux_processor* powerpc_linux_processors = NULL;
 	struct cpuinfo_processor* processors = NULL;
@@ -112,15 +138,51 @@ void cpuinfo_powerpc_linux_init(void) {
 	}
 
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
-		/* TODO(rcardoso): check for cluster leader? */
-		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
-			cpuinfo_powerpc_decode_vendor_uarch(
-			powerpc_linux_processors[i].pvr,
-			&powerpc_linux_processors[i].vendor,
-			&powerpc_linux_processors[i].uarch);
+		if (!bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
+			continue;
+		}
+		if (powerpc_linux_processors[i].flags, CPUINFO_LINUX_FLAG_PACKAGE_ID) {
+			cpuinfo_linux_detect_core_siblings(
+					powerpc_linux_processors_count, i,
+					(cpuinfo_siblings_callback) cluster_siblings_parser,
+					powerpc_linux_processors);
 		}
 	}
 
+	/* Propagate all cluster IDs */
+	uint32_t clustered_processors = 0;
+	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
+		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE | CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER)) {
+			clustered_processors += 1;
+		}
+		const uint32_t package_leader_id = powerpc_linux_processors[i].package_leader_id;
+		if (package_leader_id < i) {
+			powerpc_linux_processors[i].package_leader_id = powerpc_linux_processors[package_leader_id].package_leader_id;
+		}
+		cpuinfo_log_debug("processor %"PRIu32" clustered with processor %"PRIu32" as inferred from system siblings lists",
+				i, powerpc_linux_processors[i].package_leader_id);
+	}
+
+	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
+		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
+			const uint32_t cluster_leader = powerpc_linux_processors[i].package_leader_id;
+			if (cluster_leader == i) {
+				cpuinfo_powerpc_decode_vendor_uarch(
+				powerpc_linux_processors[i].pvr,
+				&powerpc_linux_processors[i].vendor,
+				&powerpc_linux_processors[i].uarch);
+			} else {
+				powerpc_linux_processors[i].flags |= (powerpc_linux_processors[cluster_leader].flags & CPUINFO_LINUX_FLAG_MAX_FREQUENCY);
+				powerpc_linux_processors[i].pvr = powerpc_linux_processors[cluster_leader].pvr;
+				powerpc_linux_processors[i].vendor = powerpc_linux_processors[cluster_leader].vendor;
+				powerpc_linux_processors[i].uarch = powerpc_linux_processors[cluster_leader].uarch;
+				powerpc_linux_processors[i].max_frequency = powerpc_linux_processors[cluster_leader].max_frequency;
+			}
+		}
+	}
+
+
+	uint32_t cluster_count = 1; /* TODO */
 	const struct cpuinfo_powerpc_chipset chipset = {
 		/* TODO(rcardoso): hardcoded. */
 		.vendor = cpuinfo_powerpc_chipset_vendor_ibm,
@@ -128,7 +190,8 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	cpuinfo_powerpc_chipset_to_string(&chipset, package.name);
 	package.processor_count = usable_processors;
-	package.core_count = 1; /* TODO(rcardoso) */
+	package.core_count = usable_processors;
+	package.cluster_count = cluster_count;
 
 	processors = calloc(usable_processors, sizeof(struct cpuinfo_processor));
 	if (processors == NULL) {
@@ -214,10 +277,14 @@ void cpuinfo_powerpc_linux_init(void) {
 		goto cleanup;
 	}
 
+	uint32_t cluster_id = UINT32_MAX;
 	for (uint32_t i = 0; i < usable_processors; i++) {
+		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+			cluster_id++;
+		}
 		processors[i].smt_id = i;
 		processors[i].core = cores + i;
-		processors[i].cluster = clusters + 1; //TBD
+		processors[i].cluster = clusters + cluster_id;
 		processors[i].package = &package;
 		processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
 		processors[i].cache.l1i = l1i + i;
@@ -227,6 +294,8 @@ void cpuinfo_powerpc_linux_init(void) {
 		cores[i].processor_start = 0;
 		//TODO: Hard wiring SMT=8 for now
 		smt = 8;
+		/* TODO(rcardoso): unused. */
+		linux_cpu_to_processor_map[powerpc_linux_processors[i].system_processor_id] = &processors[i];
 		cores[i].processor_count = smt;
 		cores[i].core_id = i;
 		cores[i].cluster = clusters;
