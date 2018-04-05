@@ -25,7 +25,7 @@ struct cpuinfo_powerpc_linux_processor {
 	uint32_t architecture_version;
 	uint32_t architecture_flags;
 	struct cpuinfo_powerpc_linux_proc_cpuinfo_cache proc_cpuinfo_cache;
-	uint32_t features;
+	uint64_t features;
 
 	/**
 	 * Main PVR Register value.
