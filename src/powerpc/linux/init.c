@@ -27,7 +27,7 @@ static inline bool bitmask_all(uint32_t bitfield, uint32_t mask) {
 	return (bitfield & mask) == mask;
 }
 
-static bool cluster_siblings_parser(
+static void cluster_siblings_parser(
 	uint32_t processor, uint32_t siblings_start, uint32_t siblings_end,
 	struct cpuinfo_powerpc_linux_processor* processors)
 {
@@ -50,7 +50,6 @@ static bool cluster_siblings_parser(
 	}
 
 	processors[processor].package_leader_id = package_leader_id;
-	return true;
 }
 
 void cpuinfo_powerpc_linux_init(void) {
