@@ -63,7 +63,7 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l1i = NULL;
 	struct cpuinfo_cache* l1d = NULL;
 	struct cpuinfo_cache* l2 = NULL;
-        struct cpuinfo_cache* l3 = NULL;
+	struct cpuinfo_cache* l3 = NULL;
 	struct cpuinfo_cache* l4 = NULL;
 	uint32_t usable_processors = 0;
 	int smt;
@@ -304,8 +304,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		cores[i].uarch = powerpc_linux_processors[i].uarch;
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
-                /* populate the cache information */
-                
+		/* Populate the cache information */
 		(processors[i].smt_id, &l1i[i], &l1d[i], &l2[i], &l3[i]);
 		l1i[i].processor_start = l1d[i].processor_start = 0;
 		l1i[i].processor_count = l1d[i].processor_count = i;
