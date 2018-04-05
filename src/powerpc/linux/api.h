@@ -67,6 +67,12 @@ struct cpuinfo_powerpc_linux_processor {
 	bool disabled;
 };
 
+uint64_t cpuinfo_arm_linux_hwcap_from_getauxval(void);
+
+void cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(
+		uint64_t features,
+		struct cpuinfo_powerpc_isa isa[restrict static 1]);
+
 bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
         char hardware[restrict static CPUINFO_HARDWARE_VALUE_MAX],
         uint32_t max_processors_count,

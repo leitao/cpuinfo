@@ -135,7 +135,9 @@ IF(CPUINFO_SUPPORTED_PLATFORM)
       src/powerpc/linux/chipset.c
       src/powerpc/linux/clusters.c 
       src/powerpc/linux/cpuinfo.c
-      src/powerpc/linux/init.c)
+      src/powerpc/linux/init.c
+      src/powerpc/linux/hwcap.c
+      src/powerpc/linux/ppc64-isa.c)
   ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(armv5te|armv7|armv7f|armv7s|armv7k|armv7-a|armv7l|arm64|aarch64)$" OR IOS)
     LIST(APPEND CPUINFO_SRCS
       src/arm/uarch.c

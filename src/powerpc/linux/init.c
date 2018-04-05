@@ -5,7 +5,7 @@
 
 #include <cpuinfo.h>
 #include <powerpc/linux/api.h>
-#include <gpu/api.h>
+#include <powerpc/api.h>
 #include <linux/api.h>
 #include <api.h>
 #include <log.h>
@@ -126,6 +126,9 @@ void cpuinfo_powerpc_linux_init(void) {
 			/*TODO:*/
 		}
 	}
+
+	const uint64_t isa_features = cpuinfo_powerpc_linux_hwcap_from_getauxval();
+	cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(isa_features, &cpuinfo_isa);
 
 	/* Detect min/max frequency and package id*/
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
