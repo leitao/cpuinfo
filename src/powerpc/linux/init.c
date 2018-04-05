@@ -64,7 +64,6 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l2 = NULL;
 	struct cpuinfo_cache* l3 = NULL;
 	struct cpuinfo_cache* l4 = NULL;
-	uint32_t usable_processors = 0;
 	int smt;
 
 	const uint32_t max_processors_count = cpuinfo_linux_get_max_processors_count();
@@ -73,12 +72,12 @@ void cpuinfo_powerpc_linux_init(void) {
 	const uint32_t max_possible_processors_count = 1 +
 		cpuinfo_linux_get_max_possible_processor(max_processors_count);
 	cpuinfo_log_debug("maximum possible processors count: %"PRIu32, max_possible_processors_count);
+
 	const uint32_t max_present_processors_count = 1 +
 		cpuinfo_linux_get_max_present_processor(max_processors_count);
 	cpuinfo_log_debug("maximum present processors count: %"PRIu32, max_present_processors_count);
 
 	const uint32_t powerpc_linux_processors_count = cpuinfo_linux_get_max_processors_count();
-
 	powerpc_linux_processors = calloc(powerpc_linux_processors_count, sizeof(struct cpuinfo_powerpc_linux_processor));
 	if (powerpc_linux_processors == NULL) {
 		cpuinfo_log_error(
@@ -108,26 +107,41 @@ void cpuinfo_powerpc_linux_init(void) {
 		return;
 	}
 
+	uint32_t usable_processors = 0;
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		powerpc_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
 			usable_processors += 1;
 
-			/* Detect min/max frequency */
-			const uint32_t max_frequency = cpuinfo_linux_get_processor_max_frequency(i);
-			if (max_frequency != 0) {
-				powerpc_linux_processors[i].max_frequency = max_frequency;
-				powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MAX_FREQUENCY;
+			/* TODO: */
+			/*
+			if (!(powerpc_linux_processor[i].flags & CPUINFO_POWERPC_LINUX_VALID_PROCESSOR)) {
+				cpuinfo_log_info("processor %"PRIu32" is not listed in /proc/cpuinfo", i);
 			}
-
-			const uint32_t min_frequency = cpuinfo_linux_get_processor_min_frequency(i);
-			if (min_frequency != 0) {
-				powerpc_linux_processors[i].min_frequency = min_frequency;
-				powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MIN_FREQUENCY;
-			}
-
+			*/
 			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
 					i, powerpc_linux_processors[i].pvr);
+		} else {
+			/* Processor reported in /proc/cpuinfo, but not in possible and/or present lists: log and ignore */
+			/*TODO:*/
+		}
+	}
+
+	/* Detect min/max frequency and package id*/
+	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
+		const uint32_t max_frequency = cpuinfo_linux_get_processor_max_frequency(i);
+		if (max_frequency != 0) {
+			powerpc_linux_processors[i].max_frequency = max_frequency;
+			powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MAX_FREQUENCY;
+		}
+
+		const uint32_t min_frequency = cpuinfo_linux_get_processor_min_frequency(i);
+		if (min_frequency != 0) {
+			powerpc_linux_processors[i].min_frequency = min_frequency;
+			powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_MIN_FREQUENCY;
+		}
+		if (cpuinfo_linux_get_processor_package_id(i, &powerpc_linux_processors[i].package_id)) {
+			powerpc_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_PACKAGE_ID;
 		}
 	}
 
@@ -180,6 +194,16 @@ void cpuinfo_powerpc_linux_init(void) {
 		}
 	}
 
+	/* TODO: */
+	if (clustered_processors != usable_processors) {
+		/*
+		 * Topology information about some or all logical processors may be unavailable, for the following reasons:
+		 * - Linux kernel is too old, or configured without support for topology information in sysfs.
+		 * - Core is offline, and Linux kernel is configured to not report topology for offline cores.
+		 */
+	}
+
+	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);
 
 	uint32_t cluster_count = 1; /* TODO */
 	const struct cpuinfo_powerpc_chipset chipset = {

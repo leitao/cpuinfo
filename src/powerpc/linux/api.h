@@ -72,7 +72,8 @@ bool cpuinfo_powerpc_linux_parse_proc_cpuinfo(
         uint32_t max_processors_count,
         struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors_count]);
 
+void cpuinfo_powerpc_linux_count_cluster_processors(
+		uint32_t max_processors,
+		struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);
+
 #define CPUINFO_POWERPC_LINUX_VALID_PROCESSOR    UINT32_C(0x00200000)
-
-
-
