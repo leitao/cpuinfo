@@ -209,7 +209,9 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);
 
-	uint32_t cluster_count = 1; /* TODO */
+	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster(
+		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors); /* TODO */
+
 	const struct cpuinfo_powerpc_chipset chipset = {
 		/* TODO(rcardoso): hardcoded. */
 		.vendor = cpuinfo_powerpc_chipset_vendor_ibm,
@@ -234,12 +236,10 @@ void cpuinfo_powerpc_linux_init(void) {
 		goto cleanup;
 	}
 
-	/* TBD */
-	uint32_t packages_count = usable_processors;
-	clusters = calloc(packages_count, sizeof(struct cpuinfo_cluster));
+	clusters = calloc(cluster_count, sizeof(struct cpuinfo_cluster));
 	if (clusters == NULL) {
 		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" core clusters",
-			packages_count * sizeof(struct cpuinfo_cluster), packages_count);
+			cluster_count * sizeof(struct cpuinfo_cluster), cluster_count);
 			goto cleanup;
 	}
 
@@ -318,17 +318,18 @@ void cpuinfo_powerpc_linux_init(void) {
 		processors[i].cache.l1d = l1d + i;
 		processors[i].cache.l2 = l2 + i ;
 		processors[i].cache.l3 = l3 + i ;
-		cores[i].processor_start = 0;
+		cores[i].processor_start = i;
 		//TODO: Hard wiring SMT=8 for now
 		smt = 8;
 		/* TODO(rcardoso): unused. */
 		linux_cpu_to_processor_map[powerpc_linux_processors[i].system_processor_id] = &processors[i];
 		cores[i].processor_count = smt;
 		cores[i].core_id = i;
-		cores[i].cluster = clusters;
+		cores[i].cluster = clusters + cluster_id;
 		cores[i].package = &package;
 		cores[i].vendor = powerpc_linux_processors[i].vendor;
 		cores[i].uarch = powerpc_linux_processors[i].uarch;
+		linux_cpu_to_core_map[powerpc_linux_processors[i].system_processor_id] = &cores[i];
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
 		/* Populate the cache information */
@@ -338,6 +339,20 @@ void cpuinfo_powerpc_linux_init(void) {
 		l2[i].processor_start = l3[i].processor_start = 0;
 		l2[i].processor_count = l3[i].processor_count = i;
 		l1d[i].partitions = l1i[i].partitions  = 1;
+
+		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+
+			clusters[cluster_id] = (struct cpuinfo_cluster) {
+				.processor_start = i,
+				.processor_count = powerpc_linux_processors[i].package_processor_count,
+				.core_start = i,
+				.core_count = powerpc_linux_processors[i].package_processor_count,
+				.cluster_id = cluster_id,
+				.package = &package,
+				.vendor = powerpc_linux_processors[i].vendor,
+				.uarch = powerpc_linux_processors[i].uarch,
+			};
+		}
 	}
 
 	/* Commit */
