@@ -99,7 +99,7 @@ struct cpuinfo_powerpc_linux_processor {
 	bool disabled;
 };
 
-uint32_t cpuinfo_arm_linux_hwcap_from_getauxval(void);
+uint32_t cpuinfo_powerpc_linux_hwcap_from_getauxval(void);
 
 void cpuinfo_ppc64_linux_decode_isa_from_proc_cpuinfo(
 		uint32_t features,
