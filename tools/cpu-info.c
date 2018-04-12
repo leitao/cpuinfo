@@ -189,6 +189,10 @@ static const char* uarch_to_string(enum cpuinfo_uarch uarch) {
 			return "POWER7+";
 		case cpuinfo_uarch_power8:
 			return "POWER8";
+		case cpuinfo_uarch_power8e:
+			return "POWER8E";
+		case cpuinfo_uarch_power8nvl:
+			return "POWER8NVL";
 		case cpuinfo_uarch_power9:
 			return "POWER9";
 		default:
