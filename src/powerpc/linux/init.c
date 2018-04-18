@@ -112,18 +112,16 @@ void cpuinfo_powerpc_linux_init(void) {
 		powerpc_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
 			usable_processors += 1;
-
-			/* TODO: */
-			/*
-			if (!(powerpc_linux_processor[i].flags & CPUINFO_POWERPC_LINUX_VALID_PROCESSOR)) {
+			if (!(powerpc_linux_processors[i].flags & CPUINFO_POWERPC_LINUX_VALID_PROCESSOR)) {
 				cpuinfo_log_info("processor %"PRIu32" is not listed in /proc/cpuinfo", i);
 			}
-			*/
 			cpuinfo_log_debug("parsed processor %"PRIu32" PVR 0x%08"PRIx32,
 					i, powerpc_linux_processors[i].pvr);
 		} else {
 			/* Processor reported in /proc/cpuinfo, but not in possible and/or present lists: log and ignore */
-			/*TODO:*/
+			if (!(powerpc_linux_processors[i].flags & CPUINFO_POWERPC_LINUX_VALID_PROCESSOR)) {
+				cpuinfo_log_warning("invalid processor %"PRIu32" reported in /proc/cpuinfo", i);
+			}
 		}
 	}
 

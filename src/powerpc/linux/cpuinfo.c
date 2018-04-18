@@ -57,6 +57,7 @@ static void parse_cpu_architecture(
 	const size_t cpu_arch_name_length = 5;
 
 	if (!memcmp(cpu_architecture_start, "POWER", cpu_arch_name_length)) {
+		processor->flags |= CPUINFO_POWERPC_LINUX_VALID_ARCHITECTURE;
 		processor->vendor = cpuinfo_vendor_ibm;
 
 		const char* cpu_arch_ptr = cpu_architecture_start + cpu_arch_name_length;
@@ -112,7 +113,7 @@ static void parse_cpu_architecture(
 				cpuinfo_log_warning("CPU architecture %.*s in /proc/cpuinfo is ignored due to a unsupported architecture version",
 				(int) (cpu_architecture_end - cpu_architecture_start), cpu_architecture_start);
 		}
-
+		processor->flags |= CPUINFO_POWERPC_LINUX_VALID_PROCESSOR;
 		processor->system_processor_id = -1;
 		processor->disabled = false;
 	} else {
