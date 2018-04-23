@@ -77,7 +77,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		cpuinfo_linux_get_max_present_processor(max_processors_count);
 	cpuinfo_log_debug("maximum present processors count: %"PRIu32, max_present_processors_count);
 
-	const uint32_t powerpc_linux_processors_count = cpuinfo_linux_get_max_processors_count();
+	const uint32_t powerpc_linux_processors_count = min(max_possible_processors_count, max_present_processors_count);
 	powerpc_linux_processors = calloc(powerpc_linux_processors_count, sizeof(struct cpuinfo_powerpc_linux_processor));
 	if (powerpc_linux_processors == NULL) {
 		cpuinfo_log_error(
