@@ -307,7 +307,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
 			cluster_id++;
 		}
-		processors[i].smt_id = i;
+		processors[i].smt_id = 0;
 		processors[i].core = cores + i;
 		processors[i].cluster = clusters + cluster_id;
 		processors[i].package = &package;
@@ -321,7 +321,8 @@ void cpuinfo_powerpc_linux_init(void) {
 		smt = 8;
 		/* TODO(rcardoso): unused. */
 		linux_cpu_to_processor_map[powerpc_linux_processors[i].system_processor_id] = &processors[i];
-		cores[i].processor_count = smt;
+		cores[i].processor_start = i;
+		cores[i].processor_count = 1;
 		cores[i].core_id = i;
 		cores[i].cluster = clusters + cluster_id;
 		cores[i].package = &package;
@@ -367,7 +368,7 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	cpuinfo_processors_count = usable_processors;
 	cpuinfo_cores_count = usable_processors;
-	//cpuinfo_clusters_count = cluster_count;
+	cpuinfo_clusters_count = cluster_count;
 	cpuinfo_packages_count = 1;
 	cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;
 	cpuinfo_cache_count[cpuinfo_cache_level_1d] = usable_processors;
