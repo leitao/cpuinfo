@@ -10,22 +10,35 @@ enum cpuinfo_powerpc_chipset_vendor {
 	cpuinfo_powerpc_chipset_vendor_ibm
 };
 
-/* TODO(rcardoso): not sure what series means here.*/
-/*
-enum cpuinfo_powerpc_chipset_series {
-    cpuinfo_powerpc_chipset_series_unknown = 0,
-    cpuinfo_powerpc_chipset_series_power8
+
+enum cpuinfo_powerpc_chipset_model {
+    cpuinfo_powerpc_chipset_model_unknown = 0,
+    cpuinfo_powerpc_chipset_model_power7_arch,
+	cpuinfo_powerpc_chipset_model_power8_arch,
+	cpuinfo_powerpc_chipset_model_power9_arch,
+	cpuinfo_powerpc_chipset_model_power7_raw,
+	cpuinfo_powerpc_chipset_model_power7p_raw,
+	cpuinfo_powerpc_chipset_model_power8e_raw,
+	cpuinfo_powerpc_chipset_model_power8nvl_raw,
+	cpuinfo_powerpc_chipset_model_power8_raw,
+	cpuinfo_powerpc_chipset_model_power8dd1_raw,
+	cpuinfo_powerpc_chipset_model_power9_raw,
+	cpuinfo_powerpc_chipset_model_power9dd1_raw,
 };
-*/
 
 struct cpuinfo_powerpc_chipset {
 	enum cpuinfo_powerpc_chipset_vendor vendor;
+	enum cpuinfo_powerpc_chipset_model model;
 };
 
 void cpuinfo_powerpc_decode_vendor_uarch(
 	uint32_t pvr,
 	enum cpuinfo_vendor vendor[restrict static 1],
 	enum cpuinfo_uarch uarch[restrict static 1]);
+
+void cpuinfo_powerpc_chipset_decode(
+	uint32_t pvr,
+	struct cpuinfo_powerpc_chipset chipset[restrict static 1]);
 
 void cpuinfo_powerpc_chipset_to_string(
     const struct cpuinfo_powerpc_chipset chipset[restrict static 1],

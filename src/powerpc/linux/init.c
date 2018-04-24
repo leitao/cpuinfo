@@ -210,10 +210,13 @@ void cpuinfo_powerpc_linux_init(void) {
 	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster(
 		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors); /* TODO */
 
-	const struct cpuinfo_powerpc_chipset chipset = {
-		/* TODO(rcardoso): hardcoded. */
-		.vendor = cpuinfo_powerpc_chipset_vendor_ibm,
+	struct cpuinfo_powerpc_chipset chipset = {
+		.vendor = cpuinfo_powerpc_chipset_vendor_unknown,
+		.model  = cpuinfo_powerpc_chipset_model_unknown,
 	};
+
+	/* TODO: check if need to be done for each package.  */
+	cpuinfo_powerpc_chipset_decode(powerpc_linux_processors[0].pvr, &chipset);
 
 	cpuinfo_powerpc_chipset_to_string(&chipset, package.name);
 	package.processor_count = usable_processors;
