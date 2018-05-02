@@ -43,3 +43,10 @@ void cpuinfo_powerpc_chipset_decode(
 void cpuinfo_powerpc_chipset_to_string(
     const struct cpuinfo_powerpc_chipset chipset[restrict static 1],
     char name[restrict static CPUINFO_PACKAGE_NAME_MAX]);
+
+void cpuinfo_powerpc_decode_cache(
+        uint32_t smt_id,
+        struct cpuinfo_cache l1i[restrict static 1],
+        struct cpuinfo_cache l1d[restrict static 1],
+        struct cpuinfo_cache l2[restrict static 1],
+        struct cpuinfo_cache l3[restrict static 1]);
