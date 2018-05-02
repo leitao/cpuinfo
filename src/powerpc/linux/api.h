@@ -117,7 +117,7 @@ void cpuinfo_powerpc_linux_count_cluster_processors(
 		uint32_t max_processors,
 		struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);
 
-uint32_t cpuinfo_powerpc_linux_detect_cluster(
+uint32_t cpuinfo_powerpc_linux_detect_cluster_pvr(
 		uint32_t max_processors,
 		uint32_t usable_processors,
 		struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);

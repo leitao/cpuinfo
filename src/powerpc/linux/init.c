@@ -189,8 +189,8 @@ void cpuinfo_powerpc_linux_init(void) {
 
 	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);
 
-	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster(
-		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors); /* TODO */
+	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster_pvr(
+		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors);
 
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
@@ -321,7 +321,6 @@ void cpuinfo_powerpc_linux_init(void) {
 			};
 		}
 
-		processors[i].smt_id = 0;
 		processors[i].core = cores + i;
 		processors[i].cluster = clusters + cluster_id;
 		processors[i].package = &package;
