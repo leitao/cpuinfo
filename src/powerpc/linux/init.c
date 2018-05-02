@@ -178,6 +178,20 @@ void cpuinfo_powerpc_linux_init(void) {
 				i, powerpc_linux_processors[i].package_leader_id);
 	}
 
+	if (clustered_processors != usable_processors) {
+		/*
+		 * Topology information about some or all logical processors may be unavailable, for the following reasons:
+		 * - Linux kernel is too old, or configured without support for topology information in sysfs.
+		 * - Core is offline, and Linux kernel is configured to not report topology for offline cores.
+		 */
+		cpuinfo_powerpc_linux_detect_core_clusters_by_sequential_scan(powerpc_linux_processors_count, powerpc_linux_processors);
+	}
+
+	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);
+
+	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster(
+		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors); /* TODO */
+
 	for (uint32_t i = 0; i < powerpc_linux_processors_count; i++) {
 		if (bitmask_all(powerpc_linux_processors[i].flags, CPUINFO_LINUX_MASK_USABLE)) {
 			const uint32_t cluster_leader = powerpc_linux_processors[i].package_leader_id;
@@ -195,21 +209,6 @@ void cpuinfo_powerpc_linux_init(void) {
 			}
 		}
 	}
-
-	/* TODO: */
-	if (clustered_processors != usable_processors) {
-		/*
-		 * Topology information about some or all logical processors may be unavailable, for the following reasons:
-		 * - Linux kernel is too old, or configured without support for topology information in sysfs.
-		 * - Core is offline, and Linux kernel is configured to not report topology for offline cores.
-		 */
-		cpuinfo_powerpc_linux_detect_core_clusters_by_sequential_scan(powerpc_linux_processors_count, powerpc_linux_processors);
-	}
-
-	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);
-
-	const uint32_t cluster_count =  cpuinfo_powerpc_linux_detect_cluster(
-		powerpc_linux_processors_count, usable_processors, powerpc_linux_processors); /* TODO */
 
 	struct cpuinfo_powerpc_chipset chipset = {
 		.vendor = cpuinfo_powerpc_chipset_vendor_unknown,
@@ -309,8 +308,19 @@ void cpuinfo_powerpc_linux_init(void) {
 	uint32_t cluster_id = UINT32_MAX;
 	for (uint32_t i = 0; i < usable_processors; i++) {
 		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
-			cluster_id++;
+			cluster_id += 1;
+			clusters[cluster_id] = (struct cpuinfo_cluster) {
+				.processor_start = i,
+				.processor_count = powerpc_linux_processors[i].package_processor_count,
+				.core_start = i,
+				.core_count = powerpc_linux_processors[i].package_processor_count,
+				.cluster_id = cluster_id,
+				.package = &package,
+				.vendor = powerpc_linux_processors[i].vendor,
+				.uarch = powerpc_linux_processors[i].uarch,
+			};
 		}
+
 		processors[i].smt_id = 0;
 		processors[i].core = cores + i;
 		processors[i].cluster = clusters + cluster_id;
@@ -318,12 +328,10 @@ void cpuinfo_powerpc_linux_init(void) {
 		processors[i].linux_id = (int) powerpc_linux_processors[i].system_processor_id;
 		processors[i].cache.l1i = l1i + i;
 		processors[i].cache.l1d = l1d + i;
-		processors[i].cache.l2 = l2 + i ;
-		processors[i].cache.l3 = l3 + i ;
+		processors[i].cache.l2 = l2 + i;
+		processors[i].cache.l3 = l3 + i;
+
 		cores[i].processor_start = i;
-		//TODO: Hard wiring SMT=8 for now
-		smt = 8;
-		/* TODO(rcardoso): unused. */
 		linux_cpu_to_processor_map[powerpc_linux_processors[i].system_processor_id] = &processors[i];
 		cores[i].processor_start = i;
 		cores[i].processor_count = 1;
@@ -342,20 +350,6 @@ void cpuinfo_powerpc_linux_init(void) {
 		l2[i].processor_start = l3[i].processor_start = 0;
 		l2[i].processor_count = l3[i].processor_count = i;
 		l1d[i].partitions = l1i[i].partitions  = 1;
-
-		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
-
-			clusters[cluster_id] = (struct cpuinfo_cluster) {
-				.processor_start = i,
-				.processor_count = powerpc_linux_processors[i].package_processor_count,
-				.core_start = i,
-				.core_count = powerpc_linux_processors[i].package_processor_count,
-				.cluster_id = cluster_id,
-				.package = &package,
-				.vendor = powerpc_linux_processors[i].vendor,
-				.uarch = powerpc_linux_processors[i].uarch,
-			};
-		}
 	}
 
 	/* Commit */
