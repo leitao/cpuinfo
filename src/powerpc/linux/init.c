@@ -64,7 +64,6 @@ void cpuinfo_powerpc_linux_init(void) {
 	struct cpuinfo_cache* l2 = NULL;
 	struct cpuinfo_cache* l3 = NULL;
 	struct cpuinfo_cache* l4 = NULL;
-	int smt;
 
 	const uint32_t max_processors_count = cpuinfo_linux_get_max_processors_count();
 	cpuinfo_log_debug("system maximum processors count: %"PRIu32, max_processors_count);
