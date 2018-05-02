@@ -40,7 +40,10 @@
 #define CPUINFO_POWERPC_LINUX_VALID_IMPLEMENTER  UINT32_C(0x00020000)
 #define CPUINFO_POWERPC_LINUX_VALID_REVISION     UINT32_C(0x00040000)
 #define CPUINFO_POWERPC_LINUX_VALID_PROCESSOR    UINT32_C(0x00080000)
-#define CPUINFO_POWERPC_LINUX_VALID_FEATURES     UINT32_C(0x00100000)
+#define CPUINFO_POWERPC_LINUX_VALID_VERSION      UINT32_C(0x00100000)
+#define CPUINFO_POWERPC_LINUX_VALID_FEATURES     UINT32_C(0x00200000)
+
+#define CPUINFO_POWERPC_LINUX_VALID_PVR          UINT32_C(0x001F0000)
 
 struct cpuinfo_powerpc_linux_proc_cpuinfo_cache {
 	uint32_t i_size;
@@ -118,3 +121,7 @@ uint32_t cpuinfo_powerpc_linux_detect_cluster(
 		uint32_t max_processors,
 		uint32_t usable_processors,
 		struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);
+
+void cpuinfo_powerpc_linux_detect_core_clusters_by_sequential_scan(
+	uint32_t max_processors,
+	struct cpuinfo_powerpc_linux_processor processors[restrict static max_processors]);

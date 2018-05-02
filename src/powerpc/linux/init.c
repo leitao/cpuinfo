@@ -203,6 +203,7 @@ void cpuinfo_powerpc_linux_init(void) {
 		 * - Linux kernel is too old, or configured without support for topology information in sysfs.
 		 * - Core is offline, and Linux kernel is configured to not report topology for offline cores.
 		 */
+		cpuinfo_powerpc_linux_detect_core_clusters_by_sequential_scan(powerpc_linux_processors_count, powerpc_linux_processors);
 	}
 
 	cpuinfo_powerpc_linux_count_cluster_processors(powerpc_linux_processors_count, powerpc_linux_processors);

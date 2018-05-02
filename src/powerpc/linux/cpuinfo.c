@@ -58,6 +58,10 @@ static void parse_cpu_architecture(
 
 	if (!memcmp(cpu_architecture_start, "POWER", cpu_arch_name_length)) {
 		processor->flags |= CPUINFO_POWERPC_LINUX_VALID_ARCHITECTURE;
+
+		/* For now we are assuming the implementer is always valid.  */
+		processor->flags |= CPUINFO_POWERPC_LINUX_VALID_IMPLEMENTER;
+		/* For now we only support IBM vendor.  */
 		processor->vendor = cpuinfo_vendor_ibm;
 
 		const char* cpu_arch_ptr = cpu_architecture_start + cpu_arch_name_length;
