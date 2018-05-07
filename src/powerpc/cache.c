@@ -97,16 +97,16 @@ void cpuinfo_powerpc_decode_cache(
 			case 2:
 				*l2 = (struct cpuinfo_cache) {
 						.size = size * 1024,
-						.associativity = 0,
-						.line_size = 0,
+						.associativity = associativity,
+						.line_size = line_size,
 						.sets = sets
 				};
 				break;
 			case 3:
 				*l3 = (struct cpuinfo_cache) {
 						.size = size * 1024,
-						.associativity = 0,
-						.line_size = 0,
+						.associativity = associativity,
+						.line_size = line_size,
 						.sets = sets
 				};
 				break;

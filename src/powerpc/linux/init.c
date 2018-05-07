@@ -243,48 +243,18 @@ void cpuinfo_powerpc_linux_init(void) {
 			goto cleanup;
 	}
 
-	/* TBD */
-	uint32_t l1i_count = usable_processors ;
-	if (l1i_count != 0) {
-		l1i = calloc(l1i_count, sizeof(struct cpuinfo_cache));
-		if (l1i == NULL) {
-			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1I caches",
-			l1i_count * sizeof(struct cpuinfo_cache), l1i_count);
-			goto cleanup;
-		}
+	l1i = calloc(usable_processors, sizeof(struct cpuinfo_cache));
+	if (l1i == NULL) {
+		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1I caches",
+			usable_processors * sizeof(struct cpuinfo_cache), usable_processors);
+		goto cleanup;
 	}
 
-	/* TBD */
-	uint32_t l1d_count = usable_processors;
-	if (l1d_count != 0) {
-		l1d = calloc(l1d_count, sizeof(struct cpuinfo_cache));
-		if (l1d == NULL) {
-			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1D caches",
-				l1d_count * sizeof(struct cpuinfo_cache), l1d_count);
-				goto cleanup;
-		}
-	}
-
-	/* TBD */
-	uint32_t l2_count = usable_processors;
-	if (l2_count != 0) {
-		l2 = calloc(l2_count, sizeof(struct cpuinfo_cache));
-		if (l2 == NULL) {
-			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L2 caches",
-				l2_count * sizeof(struct cpuinfo_cache), l2_count);
-				goto cleanup;
-		}
-	}
-
-	/* TBD */
-	uint32_t l3_count = usable_processors;
-	if (l3_count != 0) {
-		l3 = calloc(l3_count, sizeof(struct cpuinfo_cache));
-		if (l3 == NULL) {
-			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L3 caches",
-				l3_count * sizeof(struct cpuinfo_cache), l3_count);
-				goto cleanup;
-		}
+	l1d = calloc(usable_processors, sizeof(struct cpuinfo_cache));
+	if (l1d == NULL) {
+		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1D caches",
+				usable_processors * sizeof(struct cpuinfo_cache), usable_processors);
+		goto cleanup;
 	}
 
 	/* TBD */
@@ -304,7 +274,9 @@ void cpuinfo_powerpc_linux_init(void) {
 		goto cleanup;
 	}
 
-	uint32_t cluster_id = UINT32_MAX;
+	uint32_t l2_count = 0, l3_count = 0, big_l3_size = 0, cluster_id = UINT32_MAX;
+	/* Indication whether L3 (if it exists) is shared between all cores */
+	bool shared_l3 = true;
 	for (uint32_t i = 0; i < usable_processors; i++) {
 		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
 			cluster_id += 1;
@@ -341,12 +313,125 @@ void cpuinfo_powerpc_linux_init(void) {
 		// Disable all by default
 		cores[i].disabled = powerpc_linux_processors[i].disabled;
 		/* Populate the cache information */
-		cpuinfo_powerpc_decode_cache(processors[i].smt_id, &l1i[i], &l1d[i], &l2[i], &l3[i]);
-		l1i[i].processor_start = l1d[i].processor_start = 0;
-		l1i[i].processor_count = l1d[i].processor_count = i;
-		l2[i].processor_start = l3[i].processor_start = 0;
-		l2[i].processor_count = l3[i].processor_count = i;
-		l1d[i].partitions = l1i[i].partitions  = 1;
+		struct cpuinfo_cache tmp_l2 = { 0 }, tmp_l3 = { 0 };
+		cpuinfo_powerpc_decode_cache(cluster_id, &l1i[i], &l1d[i], &tmp_l2, &tmp_l3);
+		l1i[i].processor_start = l1d[i].processor_start = i;
+		l1i[i].processor_count = l1d[i].processor_count = 1;
+
+		if (tmp_l3.size != 0) {
+			/*
+			 * Assumptions:
+			 * - L2 is private to each core
+			 * - L3 is shared by cores in the same cluster
+			 * - If cores in different clusters report the same L3, it is shared between all cores.
+			 */
+			l2_count += 1;
+			if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+				if (cluster_id == 0) {
+					big_l3_size = tmp_l3.size;
+					l3_count = 1;
+				} else if (tmp_l3.size != big_l3_size) {
+					/* If some cores have different L3 size, L3 is not shared between all cores */
+					shared_l3 = false;
+					l3_count += 1;
+				}
+			}
+		} else {
+			/* If some cores don't have L3 cache, L3 is not shared between all cores */
+			shared_l3 = false;
+			if (tmp_l2.size != 0) {
+				/* Assume L2 is shared by cores in the same cluster */
+				if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+					l2_count += 1;
+				}
+			}
+		}
+	}
+
+	if (l2_count != 0) {
+		l2 = calloc(l2_count, sizeof(struct cpuinfo_cache));
+		if (l2 == NULL) {
+			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L2 caches",
+				l2_count * sizeof(struct cpuinfo_cache), l2_count);
+			goto cleanup;
+		}
+	}
+
+	if (l3_count != 0) {
+		l3 = calloc(l3_count, sizeof(struct cpuinfo_cache));
+		if (l3 == NULL) {
+			cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L3 caches",
+				l3_count * sizeof(struct cpuinfo_cache), l3_count);
+			goto cleanup;
+		}
+	}
+
+	cluster_id = UINT32_MAX;
+	uint32_t l2_index = UINT32_MAX, l3_index = UINT32_MAX;
+	for (uint32_t i = 0; i < usable_processors; i++) {
+		if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+			cluster_id++;
+		}
+
+		struct cpuinfo_cache dummy_l1i, dummy_l1d, tmp_l2 = { 0 }, tmp_l3 = { 0 };
+		cpuinfo_powerpc_decode_cache(cluster_id, &dummy_l1i, &dummy_l1d, &tmp_l2, &tmp_l3);
+		if (tmp_l3.size != 0) {
+			/*
+			 * Assumptions:
+			 * - L2 is private to each core
+			 * - L3 is shared by cores in the same cluster
+			 * - If cores in different clusters report the same L3, it is shared between all cores.
+			 */
+			l2_index += 1;
+			l2[l2_index] = (struct cpuinfo_cache) {
+				.size            = tmp_l2.size,
+				.associativity   = tmp_l2.associativity,
+				.sets            = tmp_l2.sets,
+				.partitions      = 1,
+				.line_size       = tmp_l2.line_size,
+				.flags           = tmp_l2.flags,
+				.processor_start = i,
+				.processor_count = 1,
+			};
+			processors[i].cache.l2 = l2 + l2_index;
+			if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+				l3_index += 1;
+				if (l3_index < l3_count) {
+					l3[l3_index] = (struct cpuinfo_cache) {
+						.size            = tmp_l3.size,
+						.associativity   = tmp_l3.associativity,
+						.sets            = tmp_l3.sets,
+						.partitions      = 1,
+						.line_size       = tmp_l3.line_size,
+						.flags           = tmp_l3.flags,
+						.processor_start = i,
+						.processor_count =
+							shared_l3 ? usable_processors : powerpc_linux_processors[i].package_processor_count,
+					};
+				}
+			}
+			if (shared_l3) {
+				processors[i].cache.l3 = l3;
+			} else if (l3_index < l3_count) {
+				processors[i].cache.l3 = l3 + l3_index;
+			}
+		} else if (tmp_l2.size != 0) {
+			/* Assume L2 is shared by cores in the same cluster */
+			if (powerpc_linux_processors[i].package_leader_id == powerpc_linux_processors[i].system_processor_id) {
+				l2_index += 1;
+				l2[l2_index] = (struct cpuinfo_cache) {
+					.size            = tmp_l2.size,
+					.associativity   = tmp_l2.associativity,
+					.sets            = tmp_l2.sets,
+					.partitions      = 1,
+					.line_size       = tmp_l2.line_size,
+					.flags           = tmp_l2.flags,
+					.processor_start = i,
+					.processor_count = powerpc_linux_processors[i].package_processor_count,
+				};
+			}
+			processors[i].cache.l2 = l2 + l2_index;
+		}
 	}
 
 	/* Commit */
@@ -367,8 +452,8 @@ void cpuinfo_powerpc_linux_init(void) {
 	cpuinfo_packages_count = 1;
 	cpuinfo_cache_count[cpuinfo_cache_level_1i] = usable_processors;
 	cpuinfo_cache_count[cpuinfo_cache_level_1d] = usable_processors;
-	cpuinfo_cache_count[cpuinfo_cache_level_2]  = usable_processors;
-	cpuinfo_cache_count[cpuinfo_cache_level_3]  = usable_processors;
+	cpuinfo_cache_count[cpuinfo_cache_level_2]  = l2_count;
+	cpuinfo_cache_count[cpuinfo_cache_level_3]  = l3_count;
 
 	linux_cpu_to_processor_map = NULL;
 	linux_cpu_to_core_map = NULL;
