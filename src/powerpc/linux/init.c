@@ -328,9 +328,8 @@ void cpuinfo_powerpc_linux_init(void) {
 		processors[i].cache.l1d = l1d + i;
 		processors[i].cache.l2 = l2 + i;
 		processors[i].cache.l3 = l3 + i;
-
-		cores[i].processor_start = i;
 		linux_cpu_to_processor_map[powerpc_linux_processors[i].system_processor_id] = &processors[i];
+
 		cores[i].processor_start = i;
 		cores[i].processor_count = 1;
 		cores[i].core_id = i;
